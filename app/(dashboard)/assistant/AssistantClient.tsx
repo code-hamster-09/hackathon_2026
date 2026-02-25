@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { currentUser, chatMessages as initialMessages } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { BookOpen, Brain, HelpCircle, Send, Sparkles } from "lucide-react";
-import ReactMarkdown from "react-markdown";
 import Image from "next/image";
 
 type ChatMessage = {
@@ -131,13 +130,16 @@ export default function AssistantClient() {
   }, [isLoading, messages, data]);
 
   useEffect(() => {
+    // сохраняем историю только после завершения ответа,
+    // чтобы не писать весь чат в localStorage на каждый токен стрима
+    if (isLoading) return;
     const simple: ChatMessage[] = (messages as any[]).map((m) => ({
       id: m.id,
       role: m.role,
       content: String(m.content ?? ""),
     }));
     saveHistory(simple);
-  }, [messages]);
+  }, [messages, isLoading]);
 
   useEffect(() => {
     const q = searchParams.get("q");
@@ -183,11 +185,9 @@ export default function AssistantClient() {
             {messages.map((message: any, idx: number) => {
               const isLast = idx === messages.length - 1;
               const content = String(message.content ?? "");
-              const showLoader =
-                message.role === "assistant" &&
-                isLast &&
-                isLoading &&
-                content === "";
+              const isAssistant = message.role === "assistant";
+              const isStreamingAssistant = isAssistant && isLast && isLoading;
+              const showLoader = isAssistant && isLast && isLoading && content === "";
 
               return (
                 <div
@@ -216,8 +216,7 @@ export default function AssistantClient() {
 
                   <div
                     className={cn(
-                      "prose prose-invert max-w-none text-sm",
-                      "max-w-[80%] rounded-2xl px-4 py-3 leading-relaxed shadow-sm",
+                      "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm",
                       message.role === "user"
                         ? "bg-primary text-primary-foreground"
                         : "border border-primary/20 bg-card/90 text-foreground shadow-[0_0_20px_rgba(56,189,248,0.15)]"
@@ -228,50 +227,11 @@ export default function AssistantClient() {
                         ...
                       </span>
                     ) : (
-                      <ReactMarkdown
-                        components={{
-                          h1: ({ node, ...props }) => (
-                            <h1 className="mb-2 text-base font-semibold leading-tight" {...props} />
-                          ),
-                          h2: ({ node, ...props }) => (
-                            <h2 className="mb-2 text-sm font-semibold leading-tight" {...props} />
-                          ),
-                          h3: ({ node, ...props }) => (
-                            <h3 className="mb-1 text-sm font-semibold leading-tight" {...props} />
-                          ),
-                          p: ({ node, ...props }) => (
-                            <p className="mb-1.5 last:mb-0" {...props} />
-                          ),
-                          ul: ({ node, ...props }) => (
-                            <ul className="mb-1.5 ml-4 list-disc space-y-1 last:mb-0" {...props} />
-                          ),
-                          ol: ({ node, ...props }) => (
-                            <ol className="mb-1.5 ml-4 list-decimal space-y-1 last:mb-0" {...props} />
-                          ),
-                          li: ({ node, ...props }) => (
-                            <li className="leading-snug" {...props} />
-                          ),
-                          code: (props) => {
-                            const { inline, ...rest } = props as any;
-                            if (inline) {
-                              return (
-                                <code
-                                  className="rounded bg-muted px-1 py-0.5 text-xs"
-                                  {...(rest as any)}
-                                />
-                              );
-                            }
-                            return (
-                              <code
-                                className="block rounded-md bg-muted px-3 py-2 text-xs leading-relaxed"
-                                {...(rest as any)}
-                              />
-                            );
-                          },
-                        }}
-                      >
-                        {content}
-                      </ReactMarkdown>
+                      content.split("\n").map((line: string, i: number) => (
+                        <p key={i} className={i > 0 ? "mt-1.5" : ""}>
+                          {line}
+                        </p>
+                      ))
                     )}
                   </div>
                 </div>
