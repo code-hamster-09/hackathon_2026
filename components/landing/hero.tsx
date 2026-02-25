@@ -17,15 +17,15 @@ export function Hero() {
           <span>AI-powered personalized learning</span>
         </div>
 
-        <h1 className="text-balance text-5xl font-bold tracking-tight text-foreground lg:text-7xl">
+        <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-7xl">
           Learn smarter, not harder
         </h1>
 
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground lg:text-xl">
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:mt-6 sm:text-lg lg:text-xl">
           EduFlow uses artificial intelligence to personalize your learning journey. Track progress, get smart recommendations, and achieve your goals faster.
         </p>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:mt-10 sm:gap-4">
           <Button asChild size="lg" className="h-12 px-8 text-base font-semibold shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30">
             <Link href="/auth/signup">
               Get started free
@@ -41,7 +41,7 @@ export function Hero() {
         </div>
 
         {/* Stats */}
-        <div className="mt-16 grid grid-cols-3 gap-8">
+        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8 sm:text-left">
           {[
             { value: "50K+", label: "Active learners" },
             { value: "200+", label: "Expert courses" },

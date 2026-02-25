@@ -40,7 +40,7 @@ export function Testimonials() {
           </h2>
         </div>
 
-        <div className="mt-16 grid gap-6 md:grid-cols-3">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 md:mt-16 md:grid-cols-3">
           {testimonials.map((t) => (
             <Card key={t.name} className="border-border/50 bg-card">
               <CardContent className="p-6">

@@ -12,7 +12,7 @@ export function Footer() {
             </div>
             <span className="text-lg font-bold text-foreground">EduFlow</span>
           </div>
-          <nav className="flex gap-8">
+          <nav className="flex flex-wrap justify-center gap-4 text-center md:justify-end md:gap-8">
             <Link href="#features" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Features
             </Link>

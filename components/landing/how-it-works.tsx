@@ -30,7 +30,7 @@ export function HowItWorks() {
           </h2>
         </div>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-3">
+        <div className="mt-12 grid gap-8 md:mt-16 md:grid-cols-3">
           {steps.map((item) => (
             <div key={item.step} className="relative text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-xl font-bold text-primary-foreground">
