@@ -2,24 +2,22 @@
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-let supabase: SupabaseClient | null = null;
+let cached: SupabaseClient | null = null;
 
 export function getSupabaseBrowser(): SupabaseClient | null {
-  // На сервере (во время build / prerender) сразу выходим
   if (typeof window === "undefined") return null;
 
-  // Кэш, чтобы не создавать клиент каждый раз
-  if (supabase) return supabase;
+  if (cached) return cached;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // ВАЖНО: никаких throw во время build
-  if (!url || !key) {
-    console.warn("Supabase env not set");
-    return null;
-  }
+  if (!url || !key) return null;
 
-  supabase = createClient(url, key);
-  return supabase;
+  cached = createClient(url, key);
+  return cached;
 }
+
+// ✅ Совместимость со старым кодом: можно продолжать импортировать supabaseBrowser
+export const supabaseBrowser: SupabaseClient | null =
+  typeof window === "undefined" ? null : getSupabaseBrowser();
