@@ -4,7 +4,8 @@ export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const apiKey = process.env.GROQCLOUD_API_KEY;
+  // поддерживаем оба варианта имени переменной, чтобы не ловить 500 из‑за конфигурации
+  const apiKey = process.env.GROQCLOUD_API_KEY || process.env.GROQ_API_KEY;
   if (!apiKey) {
     return new Response(JSON.stringify({ error: "GROQCLOUD_API_KEY не установлен" }), {
       status: 500,
@@ -13,6 +14,9 @@ export async function POST(req: Request) {
   }
 
   const { messages } = await req.json();
+  const limitedMessages = Array.isArray(messages)
+    ? messages.slice(-8)
+    : [];
 
   const body = {
     model: "llama-3.3-70b-versatile",
@@ -21,9 +25,10 @@ export async function POST(req: Request) {
     messages: [
       {
         role: "system",
-        content: "You are Fluo in EduFlow. Respond in Russian.",
+        content:
+          "Ты — дружелюбный AI-наставник Fluo в платформе EduFlow. Всегда отвечай НА РУССКОМ и форматируй ответы в Markdown, чтобы они красиво отображались в чате.\n\nПравила оформления:\n- Начинай ответ с короткого заголовка второго уровня `##` с подходящим эмодзи (например, \"## 🚀 План подготовки к экзамену\").\n- Структурируй текст в виде блоков: списки, подпункты, подзаголовки `###`.\n- Используй маркеры `-` и нумерованные списки `1.` там, где это логично.\n- Важные термины и шаги выделяй **жирным**.\n- Короткие фразы, команды и код оборачивай в `inline code`.\n- Избегай слишком длинных простынь текста — разбивай на абзацы.\n\nНе используй HTML, только чистый Markdown.",
       },
-      ...messages,
+      ...limitedMessages,
     ],
   };
 
@@ -46,6 +51,27 @@ export async function POST(req: Request) {
   if (!response.ok) {
     const txt = await response.text();
     console.error("groq error", response.status, txt);
+
+    if (response.status === 429) {
+      const retryAfterHeader = response.headers.get("retry-after");
+      const retryAfterSeconds = retryAfterHeader
+        ? Number.parseInt(retryAfterHeader, 10) || 60
+        : 60;
+
+      return new Response(
+        JSON.stringify({
+          error: "rate_limited",
+          retryAfterSeconds,
+          message:
+            "Лимит запросов к модели исчерпан. Попробуйте ещё раз через 1–2 минуты.",
+        }),
+        {
+          status: 429,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     return new Response(JSON.stringify({ error: `Groq error: ${response.status} ${txt}` }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

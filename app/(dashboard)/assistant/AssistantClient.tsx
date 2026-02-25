@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { currentUser, chatMessages as initialMessages } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { BookOpen, Brain, HelpCircle, Send, Sparkles } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import Image from "next/image";
 
 type ChatMessage = {
@@ -71,17 +72,36 @@ export default function AssistantClient() {
     append,
     isLoading,
     data,
+    setMessages,
   } = useChat({
     api: "/api/chat",
     initialMessages: seedMessages,
-    fetcher: async (input, init) => {
-      init = init || {};
-      init.headers = {
-        ...(init.headers as Record<string, string> | undefined),
-        // ensure the server knows we want a stream
-        Accept: "text/event-stream",
+    fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+      const finalInit: RequestInit = {
+        ...init,
+        headers: {
+          ...(init?.headers as Record<string, string> | undefined),
+          Accept: "text/event-stream",
+        },
       };
-      return fetch(input, init);
+      return fetch(input, finalInit);
+    },
+    onError: (err) => {
+      console.error("chat error", err);
+      const id =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : String(Date.now());
+
+      setMessages((prev: any[]) => [
+        ...prev,
+        {
+          id,
+          role: "assistant",
+          content:
+            "## ⏳ Лимит запросов исчерпан\n\nЯ временно исчерпал лимит обращений к модели. Попробуйте ещё раз через **1–2 минуты**. Если ошибка повторяется, уменьшите частоту запросов или попробуйте позже.",}
+        ],
+      );
     },
   });
 
@@ -196,7 +216,8 @@ export default function AssistantClient() {
 
                   <div
                     className={cn(
-                      "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm",
+                      "prose prose-invert max-w-none text-sm",
+                      "max-w-[80%] rounded-2xl px-4 py-3 leading-relaxed shadow-sm",
                       message.role === "user"
                         ? "bg-primary text-primary-foreground"
                         : "border border-primary/20 bg-card/90 text-foreground shadow-[0_0_20px_rgba(56,189,248,0.15)]"
@@ -207,11 +228,50 @@ export default function AssistantClient() {
                         ...
                       </span>
                     ) : (
-                      content.split("\n").map((line: string, i: number) => (
-                        <p key={i} className={i > 0 ? "mt-1.5" : ""}>
-                          {line}
-                        </p>
-                      ))
+                      <ReactMarkdown
+                        components={{
+                          h1: ({ node, ...props }) => (
+                            <h1 className="mb-2 text-base font-semibold leading-tight" {...props} />
+                          ),
+                          h2: ({ node, ...props }) => (
+                            <h2 className="mb-2 text-sm font-semibold leading-tight" {...props} />
+                          ),
+                          h3: ({ node, ...props }) => (
+                            <h3 className="mb-1 text-sm font-semibold leading-tight" {...props} />
+                          ),
+                          p: ({ node, ...props }) => (
+                            <p className="mb-1.5 last:mb-0" {...props} />
+                          ),
+                          ul: ({ node, ...props }) => (
+                            <ul className="mb-1.5 ml-4 list-disc space-y-1 last:mb-0" {...props} />
+                          ),
+                          ol: ({ node, ...props }) => (
+                            <ol className="mb-1.5 ml-4 list-decimal space-y-1 last:mb-0" {...props} />
+                          ),
+                          li: ({ node, ...props }) => (
+                            <li className="leading-snug" {...props} />
+                          ),
+                          code: (props) => {
+                            const { inline, ...rest } = props as any;
+                            if (inline) {
+                              return (
+                                <code
+                                  className="rounded bg-muted px-1 py-0.5 text-xs"
+                                  {...(rest as any)}
+                                />
+                              );
+                            }
+                            return (
+                              <code
+                                className="block rounded-md bg-muted px-3 py-2 text-xs leading-relaxed"
+                                {...(rest as any)}
+                              />
+                            );
+                          },
+                        }}
+                      >
+                        {content}
+                      </ReactMarkdown>
                     )}
                   </div>
                 </div>
