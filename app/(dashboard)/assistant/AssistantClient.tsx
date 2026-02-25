@@ -74,13 +74,41 @@ export default function AssistantClient() {
   } = useChat({
     api: "/api/chat",
     initialMessages: seedMessages,
+    fetcher: async (input, init) => {
+      init = init || {};
+      init.headers = {
+        ...(init.headers as Record<string, string> | undefined),
+        // ensure the server knows we want a stream
+        Accept: "text/event-stream",
+      };
+      return fetch(input, init);
+    },
   });
+
+  // debug hooks – inspect what the hook produces on each device
+  useEffect(() => {
+    console.log("useChat messages", messages);
+  }, [messages]);
+
+  useEffect(() => {
+    console.log("useChat data", data);
+  }, [data]);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
   }, [messages, isLoading]);
+
+  // if the last assistant message has no content once loading stops, log it
+  useEffect(() => {
+    if (!isLoading && messages.length > 0) {
+      const last = messages[messages.length - 1] as any;
+      if (last.role === "assistant" && String(last.content || "") === "") {
+        console.warn("assistant message empty", { messages, data });
+      }
+    }
+  }, [isLoading, messages, data]);
 
   useEffect(() => {
     const simple: ChatMessage[] = (messages as any[]).map((m) => ({

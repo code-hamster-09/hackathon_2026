@@ -1,9 +1,7 @@
-import { OpenAIStream, StreamingTextResponse, experimental_StreamData } from "ai";
+import { OpenAIStream, StreamingTextResponse } from "ai";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
-
-type Route = "/courses" | "/analytics" | "/dashboard";
 
 export async function POST(req: Request) {
   const apiKey = process.env.GROQCLOUD_API_KEY;
@@ -16,38 +14,14 @@ export async function POST(req: Request) {
 
   const { messages } = await req.json();
 
-  const tools = [
-    {
-      type: "function",
-      function: {
-        name: "navigate",
-        description: "Navigate inside EduFlow when truly necessary.",
-        parameters: {
-          type: "object",
-          properties: {
-            route: { type: "string", enum: ["/courses", "/analytics", "/dashboard"] },
-          },
-          required: ["route"],
-        },
-      },
-    },
-  ] as const;
-
   const body = {
     model: "llama-3.3-70b-versatile",
     temperature: 0.4,
     stream: true,
-    tool_choice: "auto",
-    tools,
     messages: [
       {
         role: "system",
-        content: `You are Fluo in EduFlow. Respond in Russian.
-Call navigate ONLY if truly necessary:
-- /courses for learning topics/courses
-- /analytics for analysis of results/mistakes
-- /dashboard for next steps/plan
-Otherwise do not call tools.`,
+        content: "You are Fluo in EduFlow. Respond in Russian.",
       },
       ...messages,
     ],
@@ -63,45 +37,30 @@ Otherwise do not call tools.`,
     cache: "no-store",
   });
 
+  // debugging information to catch device-specific behaviour
+  console.log("chat request headers:", {
+    accept: req.headers.get("accept"),
+    ua: req.headers.get("user-agent"),
+  });
+
   if (!response.ok) {
     const txt = await response.text();
+    console.error("groq error", response.status, txt);
     return new Response(JSON.stringify({ error: `Groq error: ${response.status} ${txt}` }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  const data = new experimental_StreamData();
-  let redirected = false;
+  // Преобразуем groq‑стрим формата OpenAI в формат,
+  // который умеет парсить useChat/AI SDK.
+  const stream = OpenAIStream(response);
 
-  const stream = OpenAIStream(response, {
-    experimental_onToolCall: async (toolCall: any) => {
-      if (toolCall?.toolName === "navigate") {
-        const route = toolCall?.args?.route as Route | undefined;
-        if (
-          !redirected &&
-          (route === "/courses" || route === "/analytics" || route === "/dashboard")
-        ) {
-          redirected = true;
-          data.append({ type: "redirect", route });
-        }
-      }
-      return "";
+  return new StreamingTextResponse(stream, {
+    headers: {
+      "Cache-Control": "no-cache, no-transform",
+      "X-Accel-Buffering": "no",
+      Connection: "keep-alive",
     },
-    onFinal() {
-      data.close();
-    },
-  } as any);
-
-  return new StreamingTextResponse(
-    stream,
-    {
-      headers: {
-        "Cache-Control": "no-cache, no-transform",
-        "X-Accel-Buffering": "no",
-        Connection: "keep-alive",
-      },
-    },
-    data,
-  );
+  });
 }
