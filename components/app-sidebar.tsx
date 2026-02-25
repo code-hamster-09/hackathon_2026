@@ -31,14 +31,12 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname()
-  const [collapsed, setCollapsed] = useState(false)
   const xpPercent = Math.round((currentUser.xp / currentUser.xpToNext) * 100)
 
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-border bg-card transition-all duration-300 md:flex",
-        collapsed ? "w-[72px]" : "w-64"
+        "fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-border bg-card transition-all duration-300 md:flex w-64"
       )}
     >
       {/* logo */}
@@ -46,11 +44,9 @@ export function AppSidebar() {
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary">
           <GraduationCap className="h-5 w-5 text-primary-foreground" />
         </div>
-        {!collapsed && (
           <span className="text-lg font-bold tracking-tight text-foreground">
             EduFlow
           </span>
-        )}
       </div>
 
       {/* Nav Items */}
@@ -70,7 +66,7 @@ export function AppSidebar() {
                   )}
                 >
                   <item.icon className="h-5 w-5 shrink-0" />
-                  {!collapsed && <span>{item.label}</span>}
+                  <span>{item.label}</span>
                 </Link>
               </li>
             )
@@ -79,7 +75,6 @@ export function AppSidebar() {
       </nav>
 
       {/* User info */}
-      {!collapsed && (
         <div className="border-t border-border p-4">
           <div className="flex items-center gap-3">
             <Avatar className="h-9 w-9">
@@ -100,19 +95,6 @@ export function AppSidebar() {
             <Progress value={xpPercent} className="h-1.5" />
           </div>
         </div>
-      )}
-
-      {/* Collapse button */}
-      <div className="border-t border-border p-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-center text-muted-foreground"
-          onClick={() => setCollapsed(!collapsed)}
-        >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </Button>
-      </div>
     </aside>
   )
 }

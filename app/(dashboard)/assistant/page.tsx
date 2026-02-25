@@ -1,5 +1,12 @@
+"use client";
+
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
-import AssistantClient from "./AssistantClient";
+
+const AssistantClient = dynamic(() => import("./AssistantClient"), {
+  ssr: false,
+  loading: () => <div className="p-6">Loading assistant...</div>,
+});
 
 export default function AssistantPage() {
   return (
