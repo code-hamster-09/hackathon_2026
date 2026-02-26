@@ -20,10 +20,14 @@ export async function POST(req: Request) {
   const payload = await req.json();
   const messages = payload.messages ?? [];
   const preferences = (payload.preferences ?? null) as QuestionnairePreferences | null;
+  const userName = (payload.userName ?? null) as string | null;
   const limitedMessages = Array.isArray(messages) ? messages.slice(-8) : [];
 
   const persona = buildPersonaPrompt(preferences);
-  const systemContent = BASE_SYSTEM + (persona ? persona + "\n" : "");
+  let systemContent = BASE_SYSTEM + (persona ? persona + "\n" : "");
+  if (userName?.trim()) {
+    systemContent += `Пользователя зовут ${userName.trim()}. Обращайся к нему по имени при необходимости.\n`;
+  }
 
   const body = {
     model: "llama-3.3-70b-versatile",

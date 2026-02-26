@@ -20,7 +20,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
 
   if (!course) {
     return (
-      <div className="flex flex-col">
+      <div className="flex min-h-0 flex-1 flex-col overflow-auto">
         <TopNavbar title="Course Not Found" />
         <div className="flex flex-col items-center justify-center py-32">
           <p className="text-lg font-semibold text-foreground">Course not found</p>
@@ -33,7 +33,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-h-0 flex-1 flex-col overflow-auto">
       <TopNavbar title={course.title} />
       <div className="flex flex-col gap-6 p-6">
         {/* Back button */}

@@ -35,7 +35,7 @@ export default function GamificationPage() {
   const unlockedCount = achievements.filter((a) => a.unlocked).length
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-h-0 flex-1 flex-col overflow-auto">
       <TopNavbar title="Achievements" />
       <div className="flex flex-col gap-6 p-6">
         {/* Level card */}

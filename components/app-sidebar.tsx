@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   BookOpen,
@@ -10,15 +10,12 @@ import {
   MessageSquare,
   User,
   GraduationCap,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { currentUser } from "@/lib/mock-data"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
-import { Button } from "@/components/ui/button"
-import { useState } from "react"
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
+import { useProfile } from "@/lib/profile-context";
+import { currentUser } from "@/lib/mock-data";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -27,33 +24,31 @@ const navItems = [
   { href: "/gamification", label: "Achievements", icon: Trophy },
   { href: "/assistant", label: "AI Assistant", icon: MessageSquare },
   { href: "/profile", label: "Profile", icon: User },
-]
+];
 
 export function AppSidebar() {
-  const pathname = usePathname()
-  const xpPercent = Math.round((currentUser.xp / currentUser.xpToNext) * 100)
+  const pathname = usePathname();
+  const { firstNameDisplay, initials, avatarUrl } = useProfile();
+
+  const xpPercent = Math.round((currentUser.xp / currentUser.xpToNext) * 100);
 
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-border bg-card transition-all duration-300 md:flex w-64"
+        "fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-border bg-card transition-all duration-300 md:flex"
       )}
     >
-      {/* logo */}
       <div className="flex h-16 items-center gap-2 border-b border-border px-4">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary">
           <GraduationCap className="h-5 w-5 text-primary-foreground" />
         </div>
-          <span className="text-lg font-bold tracking-tight text-foreground">
-            EduFlow
-          </span>
+        <span className="text-lg font-bold tracking-tight text-foreground">EduFlow</span>
       </div>
 
-      {/* Nav Items */}
       <nav className="flex-1 px-3 py-4">
         <ul className="flex flex-col gap-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <li key={item.href}>
                 <Link
@@ -69,32 +64,43 @@ export function AppSidebar() {
                   <span>{item.label}</span>
                 </Link>
               </li>
-            )
+            );
           })}
         </ul>
       </nav>
 
-      {/* User info */}
-        <div className="border-t border-border p-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-9 w-9">
-              <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
-                {currentUser.initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 overflow-hidden">
-              <p className="truncate text-sm font-semibold text-foreground">{currentUser.name}</p>
-              <p className="text-xs text-muted-foreground">Level {currentUser.level}</p>
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="mb-1 flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">XP Progress</span>
-              <span className="text-xs font-medium text-primary">{currentUser.xp}/{currentUser.xpToNext}</span>
-            </div>
-            <Progress value={xpPercent} className="h-1.5" />
+      <div className="border-t border-border p-4">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-9 w-9 shrink-0">
+            {avatarUrl ? (
+              <AvatarImage
+                src={avatarUrl}
+                alt=""
+                className="object-cover"
+                referrerPolicy="no-referrer"
+              />
+            ) : null}
+            <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-foreground">{firstNameDisplay}</p>
+            <p className="text-xs text-muted-foreground">
+              Level {currentUser.level}
+            </p>
           </div>
         </div>
+        <div className="mt-3">
+          <div className="mb-1 flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">XP Progress</span>
+            <span className="text-xs font-medium text-primary">
+              {currentUser.xp}/{currentUser.xpToNext}
+            </span>
+          </div>
+          <Progress value={xpPercent} className="h-1.5" />
+        </div>
+      </div>
     </aside>
-  )
+  );
 }

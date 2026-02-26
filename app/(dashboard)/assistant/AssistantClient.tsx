@@ -6,15 +6,20 @@ import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 
 import avaFluo from "@/assets/images/avaFluo.png";
 import { TopNavbar } from "@/components/top-navbar";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { currentUser, chatMessages as initialMessages } from "@/lib/mock-data";
 import { getSupabaseBrowser } from "@/lib/supabase-client";
+import { useProfile } from "@/lib/profile-context";
 import type { QuestionnairePreferences } from "@/lib/questionnaire-types";
 import { cn } from "@/lib/utils";
-import { BookOpen, Brain, HelpCircle, Send, Sparkles } from "lucide-react";
+import { BookOpen, Brain, HelpCircle, Send, Sparkles, Zap } from "lucide-react";
 import Image from "next/image";
 
 type ChatMessage = {
@@ -191,6 +196,7 @@ export default function AssistantClient() {
   const searchParams = useSearchParams();
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastRedirectRef = useRef<string | null>(null);
+  const [fastRequestsOpen, setFastRequestsOpen] = useState(false);
 
   const seedMessages = useMemo<ChatMessage[]>(() => {
     const stored = loadHistory();
@@ -203,6 +209,8 @@ export default function AssistantClient() {
   }, []);
 
   const [preferences, setPreferences] = useState<QuestionnairePreferences | null>(null);
+  const { firstNameDisplay, avatarUrl: userAvatarUrl, initials: userInitials } = useProfile();
+
   useEffect(() => {
     const supabase = getSupabaseBrowser();
     if (!supabase) return;
@@ -232,7 +240,7 @@ export default function AssistantClient() {
   } = useChat({
     api: "/api/chat",
     initialMessages: seedMessages,
-    body: { preferences: preferences ?? undefined },
+    body: { preferences: preferences ?? undefined, userName: firstNameDisplay || undefined },
     fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
       const finalInit: RequestInit = {
         ...init,
@@ -326,25 +334,26 @@ export default function AssistantClient() {
 
   async function handleSuggestion(text: string) {
     setInput(text);
+    setFastRequestsOpen(false);
     await append({ role: "user", content: text });
     setInput("");
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <TopNavbar title="AI Assistant" />
-      <div className="flex flex-1 flex-col gap-6 p-6 lg:flex-row">
-        <div className="mx-auto h-full flex w-full flex-1 flex-col rounded-3xl border border-border/60 bg-gradient-to-b from-background/60 via-background to-background/80 p-4 shadow-[0_0_0_1px_rgba(148,163,184,0.15)]">
-          <div
-            ref={scrollRef}
-            className="flex flex-1 flex-col gap-6 overflow-y-auto pb-4"
-            style={{ maxHeight: "calc(100vh - 260px)" }}
-          >
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        {/* Скролл только здесь; снизу отступ под панель */}
+        <div
+          ref={scrollRef}
+          className="absolute inset-0 overflow-y-auto overflow-x-hidden p-4 pb-4 sm:p-6 sm:pb-4"
+          style={{ paddingBottom: "max(1rem, 10rem)" }}
+        >
+          <div className="mx-auto w-full max-w-3xl space-y-6">
             {messages.map((message: any, idx: number) => {
               const isLast = idx === messages.length - 1;
               const content = String(message.content ?? "");
               const isAssistant = message.role === "assistant";
-              const isStreamingAssistant = isAssistant && isLast && isLoading;
               const showLoader = isAssistant && isLast && isLoading && content === "";
 
               return (
@@ -352,26 +361,16 @@ export default function AssistantClient() {
                   key={message.id}
                   className={cn(
                     "flex gap-3",
-                    message.role === "user" ? "flex-row-reverse" : ""
+                    message.role === "user" ? "flex-row justify-end" : "flex-row justify-start"
                   )}
                 >
-                  <Avatar className="h-12 w-12 shrink-0">
-                    <AvatarFallback
-                      className={cn(
-                        "text-xs font-semibold",
-                        message.role === "assistant"
-                          ? "bg-primary/10 text-primary"
-                          : "bg-accent/10 text-accent"
-                      )}
-                    >
-                      {message.role === "assistant" ? (
-                        <Image src={avaFluo} alt="Fluo avatar" />
-                      ) : (
-                        currentUser.initials
-                      )}
-                    </AvatarFallback>
-                  </Avatar>
-
+                  {message.role === "assistant" && (
+                    <Avatar className="h-12 w-12 shrink-0">
+                      <AvatarFallback className="bg-primary/10 text-primary overflow-hidden">
+                        <Image src={avaFluo} alt="Fluo avatar" className="object-cover" />
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
                   <div
                     className={cn(
                       "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm",
@@ -388,46 +387,76 @@ export default function AssistantClient() {
                       renderRichContent(content)
                     )}
                   </div>
+                  {message.role === "user" && (
+                    <Avatar className="h-12 w-12 shrink-0">
+                      {userAvatarUrl ? (
+                        <AvatarImage src={userAvatarUrl} alt="" className="object-cover" />
+                      ) : null}
+                      <AvatarFallback className="bg-accent/10 text-accent text-xs font-semibold">
+                        {userInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
                 </div>
               );
             })}
           </div>
+        </div>
 
-          <CardContent className="flex flex-wrap gap-2 p-0 mb-4">
-            {suggestions.map((s) => (
+        {/* Нижняя панель: всегда внизу экрана, не скроллится */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-border/60 bg-background/95 p-4 pt-2 backdrop-blur sm:p-6">
+          <div className="mx-auto max-w-3xl">
+            <form onSubmit={handleSubmit} className="flex gap-3">
+              <div className="relative flex flex-1 items-center rounded-2xl border border-input bg-card/80 shadow-sm pl-2">
+                {/* <Sparkles className="pointer-events-none ml-3 h-4 w-4 shrink-0 text-primary/60 mr-2" /> */}
+                <Popover open={fastRequestsOpen} onOpenChange={setFastRequestsOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 rounded-lg text-primary bg-primary/10"
+                      disabled={isLoading}
+                      title="Быстрые запросы"
+                    >
+                      <Zap className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent side="top" className="w-[min(calc(100vw-2rem),320px)]">
+                    <div className="flex flex-col gap-2">
+                      {suggestions.map((s) => (
+                        <Button
+                          key={s.label}
+                          variant="outline"
+                          size="sm"
+                          className="h-auto justify-start gap-2 py-2 text-left text-xs"
+                          onClick={() => void handleSuggestion(s.label)}
+                          disabled={isLoading}
+                        >
+                          <s.icon className="h-3.5 w-3.5 shrink-0 text-primary" />
+                          {s.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <Input
+                  value={input}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask anything about your courses..."
+                  className="h-12 min-w-0 flex-1 border-0 bg-transparent pl-1 pr-4 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              </div>
               <Button
-                key={s.label}
-                variant="outline"
-                size="sm"
-                className="gap-2 text-xs"
-                onClick={() => void handleSuggestion(s.label)}
-                disabled={isLoading}
+                type="submit"
+                disabled={!input.trim() || isLoading}
+                className="h-12 w-12 shrink-0 rounded-2xl bg-primary shadow-lg shadow-primary/40"
               >
-                <s.icon className="h-3.5 w-3.5 text-primary" />
-                {s.label}
+                <Send className="h-4 w-4" />
               </Button>
-            ))}
-          </CardContent>
-
-          <form onSubmit={handleSubmit} className="flex gap-3">
-            <div className="relative flex-1">
-              <Sparkles className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
-              <Input
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask anything about your courses..."
-                className="h-12 bg-card/80 pl-10 pr-4 rounded-2xl"
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={!input.trim() || isLoading}
-              className="h-12 w-12 shrink-0 rounded-2xl bg-primary shadow-lg shadow-primary/40"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </div>

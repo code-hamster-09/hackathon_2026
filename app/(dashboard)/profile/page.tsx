@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { TopNavbar } from "@/components/top-navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,16 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { currentUser, courses } from "@/lib/mock-data";
 import { getSupabaseBrowser } from "@/lib/supabase-client";
+import { useProfile } from "@/lib/profile-context";
 import type { ProfileRow } from "@/lib/questionnaire-types";
 import {
   BookOpen,
@@ -27,16 +35,27 @@ import {
   Moon,
   Globe,
   ClipboardList,
+  Upload,
+  ImageIcon,
 } from "lucide-react";
 
 export default function ProfilePage() {
+  const { refresh: refreshProfile } = useProfile();
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [email, setEmail] = useState("");
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { firstNameDisplay } = useProfile();
   const xpPercent = Math.round((currentUser.xp / currentUser.xpToNext) * 100);
   const completedCourses = courses.filter((c) => c.progress === 100).length;
   const questionnaireCompleted = !!profile?.questionnaire_completed_at;
@@ -59,11 +78,14 @@ export default function ProfilePage() {
         .eq("id", user.id)
         .single()
         .then(({ data, error }) => {
-          if (error && error.code !== "PGRST116") console.error(error);
+          if (error && error.code !== "PGRST116") {
+            console.error("Profile load error:", error.message || error.code || String(error));
+          }
           if (data) {
             setProfile(data as ProfileRow);
             setFirstName(data.first_name ?? "");
             setLastName(data.last_name ?? "");
+            setAvatarUrl(data.avatar_url ?? "");
           } else {
             setFirstName(user.user_metadata?.first_name ?? "");
             setLastName(user.user_metadata?.last_name ?? "");
@@ -89,13 +111,109 @@ export default function ProfilePage() {
           id: user.id,
           first_name: firstName.trim() || null,
           last_name: lastName.trim() || null,
+          avatar_url: avatarUrl.trim() || null,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "id" }
       );
     setSaving(false);
-    if (error) console.error(error);
-    else setProfile((p) => (p ? { ...p, first_name: firstName.trim() || null, last_name: lastName.trim() || null } : null));
+    if (error) {
+      console.error("Profile save error:", error.message || error.code || String(error));
+    } else {
+      setProfile((p) => (p ? { ...p, first_name: firstName.trim() || null, last_name: lastName.trim() || null, avatar_url: avatarUrl.trim() || null } : null));
+      refreshProfile();
+    }
+  }
+
+  function openAvatarModal() {
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setAvatarError(null);
+    setAvatarModalOpen(true);
+  }
+
+  function onAvatarFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      return;
+    }
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowed.includes(file.type) || file.size > 2 * 1024 * 1024) {
+      setAvatarError("Формат: JPG, PNG, WebP или GIF, не более 2 МБ");
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      return;
+    }
+    setAvatarError(null);
+    setAvatarFile(file);
+    const url = URL.createObjectURL(file);
+    setAvatarPreview(url);
+  }
+
+  async function handleAvatarUpload() {
+    const supabase = getSupabaseBrowser();
+    if (!supabase || !avatarFile) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setAvatarUploading(true);
+    setAvatarError(null);
+
+    const ensureRes = await fetch("/api/storage/ensure-avatars", { method: "POST" });
+    if (!ensureRes.ok) {
+      const body = await ensureRes.json().catch(() => ({}));
+      const msg =
+        body?.error === "missing_service_role"
+          ? body?.message || "Настройте SUPABASE_SERVICE_ROLE_KEY или создайте бакет avatars в Supabase Dashboard (Storage → New bucket)."
+          : body?.message || body?.error || "Не удалось подготовить хранилище.";
+      setAvatarError(msg);
+      setAvatarUploading(false);
+      return;
+    }
+
+    const ext = avatarFile.name.split(".").pop()?.toLowerCase() || "jpg";
+    const path = `${user.id}/avatar.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(path, avatarFile, { upsert: true });
+    if (uploadError) {
+      setAvatarError(uploadError.message || "Ошибка загрузки");
+      setAvatarUploading(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    const newUrl = urlData.publicUrl;
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .upsert(
+        {
+          id: user.id,
+          avatar_url: newUrl,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      );
+    setAvatarUploading(false);
+    if (profileError) {
+      setAvatarError(profileError.message || "Ошибка сохранения");
+      return;
+    }
+    setAvatarUrl(newUrl);
+    setProfile((p) => (p ? { ...p, avatar_url: newUrl } : null));
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarModalOpen(false);
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    refreshProfile();
+  }
+
+  function closeAvatarModal() {
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarModalOpen(false);
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setAvatarError(null);
   }
 
   const displayName =
@@ -117,7 +235,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-h-0 flex-1 flex-col overflow-auto">
       <TopNavbar title="Profile" />
       <div className="flex flex-col gap-6 p-6">
         {!questionnaireCompleted && (
@@ -141,13 +259,16 @@ export default function ProfilePage() {
           <CardContent className="p-6 lg:p-8">
             <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start">
               <Avatar className="h-24 w-24">
+                {avatarUrl ? (
+                  <AvatarImage src={avatarUrl} alt="" className="object-cover" />
+                ) : null}
                 <AvatarFallback className="bg-primary/10 text-2xl font-bold text-primary">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 text-center lg:text-left">
                 <div className="flex flex-col items-center gap-2 lg:flex-row">
-                  <h2 className="text-2xl font-bold text-foreground">{displayName}</h2>
+                  <h2 className="text-2xl font-bold text-foreground">{firstNameDisplay}</h2>
                   <Badge className="bg-primary/10 text-primary border-primary/20" variant="outline">
                     Level {currentUser.level}
                   </Badge>
@@ -213,6 +334,19 @@ export default function ProfilePage() {
                 <div className="flex flex-col gap-2">
                   <Label className="text-foreground">Email</Label>
                   <Input value={email} readOnly className="bg-muted/50" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label className="text-foreground">Аватар</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-fit gap-2"
+                    onClick={openAvatarModal}
+                    disabled={loading}
+                  >
+                    <Upload className="h-4 w-4" />
+                    Загрузить фото
+                  </Button>
                 </div>
                 <Button type="submit" disabled={saving || loading} className="mt-2 w-fit font-medium">
                   {saving ? "Сохранение…" : "Сохранить изменения"}
@@ -283,6 +417,60 @@ export default function ProfilePage() {
           </Card>
         </div>
       </div>
+
+      <Dialog open={avatarModalOpen} onOpenChange={(open) => !open && closeAvatarModal()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Загрузить аватар</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={onAvatarFileChange}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              className="flex flex-col gap-2 py-8"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={avatarUploading}
+            >
+              <ImageIcon className="h-10 w-10 text-muted-foreground" />
+              <span className="text-sm">
+                {avatarFile ? "Выбрать другой файл" : "Выберите изображение (JPG, PNG, WebP, GIF до 2 МБ)"}
+              </span>
+            </Button>
+            {avatarPreview && (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-xs text-muted-foreground">Превью:</p>
+                <img
+                  src={avatarPreview}
+                  alt="Превью"
+                  className="h-32 w-32 rounded-full object-cover border border-border"
+                />
+              </div>
+            )}
+            {avatarError && (
+              <p className="text-sm text-destructive">{avatarError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={closeAvatarModal}>
+              Отмена
+            </Button>
+            <Button
+              type="button"
+              onClick={handleAvatarUpload}
+              disabled={!avatarFile || avatarUploading}
+            >
+              {avatarUploading ? "Сохранение…" : "Сохранить"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

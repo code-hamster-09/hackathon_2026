@@ -11,15 +11,15 @@ const actions = [
 
 export function QuickActions() {
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
       {actions.map((action) => (
         <Link key={action.href} href={action.href}>
           <Card className="group cursor-pointer border-border/50 transition-all hover:border-primary/20 hover:shadow-md">
-            <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color} transition-transform group-hover:scale-110`}>
-                <action.icon className="h-5 w-5" />
+            <CardContent className="flex flex-col items-center gap-1.5 p-3 text-center sm:gap-2 sm:p-4">
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl sm:h-10 sm:w-10 ${action.color} transition-transform group-hover:scale-110`}>
+                <action.icon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
-              <span className="text-sm font-medium text-foreground">{action.label}</span>
+              <span className="text-xs font-medium text-foreground sm:text-sm">{action.label}</span>
             </CardContent>
           </Card>
         </Link>

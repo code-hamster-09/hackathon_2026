@@ -10,8 +10,10 @@ const AssistantClient = dynamic(() => import("./AssistantClient"), {
 
 export default function AssistantPage() {
   return (
-    <Suspense fallback={<div className="p-6">Loading assistant...</div>}>
-      <AssistantClient />
-    </Suspense>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <Suspense fallback={<div className="p-6">Loading assistant...</div>}>
+        <AssistantClient />
+      </Suspense>
+    </div>
   );
 }

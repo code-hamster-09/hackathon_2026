@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,11 +28,185 @@ import { cn } from "@/lib/utils";
 const SKIP_MESSAGE =
   "Вы пропустили персонализацию. AI-ассистент сможет отвечать, но объяснения могут быть менее точными и менее понятными без учёта вашего стиля обучения. Вы всегда можете пройти опрос позже в профиле.";
 
+type StepOption = { value: string; label: string };
+type Step =
+  | { type: "radio"; key: keyof QuestionnairePreferences; label: string; options: StepOption[] }
+  | {
+      type: "checkbox";
+      key: keyof QuestionnairePreferences;
+      label: string;
+      options: { value: string; label: string }[];
+    };
+
+const STEPS: Step[] = [
+  {
+    type: "radio",
+    key: "level",
+    label: "Как ты оцениваешь свой текущий уровень обучения в целом?",
+    options: [
+      { value: "beginner", label: "🟢 Новичок — объяснять с самых основ" },
+      { value: "intermediate", label: "🟡 Средний — знаю базу, но путаюсь в сложных темах" },
+      { value: "advanced", label: "🔴 Продвинутый — хочу глубокие и быстрые объяснения" },
+    ],
+  },
+  {
+    type: "radio",
+    key: "understanding",
+    label: "Когда ты изучаешь новую тему, что обычно происходит?",
+    options: [
+      { value: "need_basics", label: "Я ничего не понимаю без простого объяснения" },
+      { value: "step_by_step", label: "Понимаю, если объясняют пошагово" },
+      { value: "fast_but_deep", label: "Понимаю быстро, но хочу больше глубины" },
+      { value: "details_and_logic", label: "Мне важны детали и логика, а не упрощение" },
+    ],
+  },
+  {
+    type: "radio",
+    key: "explanation_style",
+    label: "Как тебе проще всего понимать сложные темы?",
+    options: [
+      { value: "simple", label: "Простыми словами, максимально понятно" },
+      { value: "examples", label: "Через примеры из реальной жизни" },
+      { value: "metaphors", label: "Через аналогии и метафоры" },
+      { value: "logic", label: "Через логику и пошаговое объяснение" },
+      { value: "structured", label: "Через схемы и структурированное объяснение" },
+    ],
+  },
+  {
+    type: "radio",
+    key: "explanation_format",
+    label: "Какой формат объяснений тебе ближе?",
+    options: [
+      { value: "short", label: "Коротко и по делу" },
+      { value: "medium", label: "Средне: кратко + примеры" },
+      { value: "detailed", label: "Подробно и глубоко" },
+      { value: "lecture", label: "Очень подробно, как на лекции" },
+    ],
+  },
+  {
+    type: "checkbox",
+    key: "metaphor_examples",
+    label: "С какими примерами тебе легче понимать информацию? (можно несколько)",
+    options: [
+      { value: "games", label: "🎮 Игры" },
+      { value: "tech", label: "💻 Технологии и программирование" },
+      { value: "school", label: "📚 Учёба и школьные примеры" },
+      { value: "real_life", label: "🌍 Реальная жизнь и бытовые ситуации" },
+      { value: "science", label: "🧠 Научные и логические примеры" },
+      { value: "career", label: "💼 Карьера и работа" },
+    ],
+  },
+  {
+    type: "radio",
+    key: "metaphors_needed",
+    label: "Нужны ли тебе метафоры при объяснении сложных тем?",
+    options: [
+      { value: "yes", label: "Да, это сильно помогает понимать" },
+      { value: "sometimes", label: "Иногда, если тема сложная" },
+      { value: "no", label: "Нет, лучше прямое объяснение без метафор" },
+    ],
+  },
+  {
+    type: "radio",
+    key: "pace",
+    label: "Какой темп объяснения тебе комфортнее?",
+    options: [
+      { value: "slow", label: "Медленный, с пояснением каждого шага" },
+      { value: "medium", label: "Средний, без лишней воды" },
+      { value: "fast", label: "Быстрый и по существу" },
+    ],
+  },
+  {
+    type: "radio",
+    key: "complex_topic_style",
+    label: "Если тема очень сложная, как лучше объяснять?",
+    options: [
+      { value: "simplify", label: "Максимально упростить" },
+      { value: "steps", label: "Разбить на маленькие шаги" },
+      { value: "simple_then_deep", label: "Сначала простая идея, потом углубление" },
+      { value: "deep", label: "Сразу глубокое и точное объяснение" },
+    ],
+  },
+  {
+    type: "checkbox",
+    key: "goal",
+    label: "Зачем ты используешь платформу? (можно несколько)",
+    options: [
+      { value: "exams", label: "Подготовка к экзаменам" },
+      { value: "school", label: "Учёба в школе/университете" },
+      { value: "career", label: "Освоение профессии / навыков" },
+      { value: "self_learning", label: "Саморазвитие" },
+      { value: "quick_understanding", label: "Быстрое понимание сложных тем" },
+    ],
+  },
+  {
+    type: "radio",
+    key: "tone",
+    label: "Какой стиль общения ассистента тебе комфортнее?",
+    options: [
+      { value: "friendly", label: "Дружелюбный и простой" },
+      { value: "mentor", label: "Как наставник/преподаватель" },
+      { value: "academic", label: "Строгий и академический" },
+      { value: "informal", label: "Неформальный и лёгкий" },
+    ],
+  },
+  {
+    type: "radio",
+    key: "language",
+    label: "На каком языке тебе удобнее получать объяснения?",
+    options: [
+      { value: "ru", label: "Русский" },
+      { value: "en", label: "Английский" },
+      { value: "mixed", label: "Смешанный (RU + EN)" },
+    ],
+  },
+  {
+    type: "checkbox",
+    key: "learning_areas",
+    label: "В какой области ты чаще всего учишься? (можно несколько)",
+    options: [
+      { value: "programming", label: "Программирование" },
+      { value: "math", label: "Математика" },
+      { value: "science", label: "Наука" },
+      { value: "school", label: "Школьные предметы" },
+      { value: "business", label: "Бизнес / аналитика" },
+      { value: "other", label: "Другое" },
+    ],
+  },
+  {
+    type: "checkbox",
+    key: "irritants",
+    label: "Что тебя больше всего раздражает в объяснениях? (можно несколько)",
+    options: [
+      { value: "too_complex", label: "Слишком сложно и непонятно" },
+      { value: "too_verbose", label: "Слишком много воды" },
+      { value: "too_short", label: "Слишком кратко" },
+      { value: "no_examples", label: "Нет примеров" },
+      { value: "too_academic", label: "Слишком академично" },
+    ],
+  },
+  {
+    type: "radio",
+    key: "final_style",
+    label: "Как ты хочешь, чтобы AI объяснял тебе сложные темы?",
+    options: [
+      { value: "teacher_novice", label: "Как учителю новичку" },
+      { value: "mentor_examples", label: "Как наставник с примерами из жизни" },
+      { value: "metaphors", label: "Через метафоры и аналогии" },
+      { value: "structured", label: "Логично и структурированно" },
+      { value: "short_clear", label: "Кратко, но понятно" },
+    ],
+  },
+];
+
+const TOTAL_STEPS = STEPS.length;
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [openSkip, setOpenSkip] = useState(false);
   const [loading, setLoading] = useState(false);
   const [skipLoading, setSkipLoading] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
   const [prefs, setPrefs] = useState<QuestionnairePreferences>({});
   const [otherLearning, setOtherLearning] = useState("");
 
@@ -50,31 +225,21 @@ export default function OnboardingPage() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return null;
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+    const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
     if (profile) return profile;
     const meta = user.user_metadata ?? {};
-    const { error } = await supabase.from("profiles").insert({
+    await supabase.from("profiles").insert({
       id: user.id,
       first_name: meta.first_name ?? null,
       last_name: meta.last_name ?? null,
       questionnaire_completed_at: null,
       preferences: null,
     });
-    if (error) console.error("ensureProfile", error);
-    const { data: inserted } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+    const { data: inserted } = await supabase.from("profiles").select("*").eq("id", user.id).single();
     return inserted;
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit() {
     setLoading(true);
     const supabase = getSupabaseBrowser();
     if (!supabase) {
@@ -91,8 +256,7 @@ export default function OnboardingPage() {
     }
     await ensureProfile();
     const prefsToSave = { ...prefs };
-    if (otherLearning.trim()) {
-      prefsToSave.learning_areas = [...(prefsToSave.learning_areas ?? []), "other"];
+    if (otherLearning.trim() && Array.isArray(prefsToSave.learning_areas) && prefsToSave.learning_areas.includes("other")) {
       (prefsToSave as Record<string, unknown>).other_learning_area = otherLearning.trim();
     }
     const { error } = await supabase
@@ -142,6 +306,27 @@ export default function OnboardingPage() {
     router.push("/dashboard");
   }
 
+  const step = STEPS[stepIndex];
+  const progressPercent = Math.round(((stepIndex + 1) / TOTAL_STEPS) * 100);
+  const isLastStep = stepIndex === TOTAL_STEPS - 1;
+
+  const currentValue = step ? prefs[step.key] : undefined;
+  const canNext =
+    step?.type === "radio"
+      ? !!currentValue
+      : step?.type === "checkbox"
+        ? true
+        : false;
+
+  function goNext() {
+    if (isLastStep) handleSubmit();
+    else setStepIndex((i) => Math.min(i + 1, TOTAL_STEPS - 1));
+  }
+
+  function goPrev() {
+    setStepIndex((i) => Math.max(i - 1, 0));
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
@@ -150,7 +335,7 @@ export default function OnboardingPage() {
       </div>
 
       <div className="relative mx-auto max-w-2xl px-4 py-8 pb-32">
-        <Link href="/" className="mb-8 inline-flex items-center gap-2">
+        <Link href="/" className="mb-6 inline-flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
             <GraduationCap className="h-5 w-5 text-primary-foreground" />
           </div>
@@ -158,394 +343,119 @@ export default function OnboardingPage() {
         </Link>
 
         <Card className="border-border/50 bg-card shadow-xl">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-foreground">
-              Персонализация AI-ассистента обучения
+          <CardHeader className="pb-2">
+            <div className="mb-3 flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                Вопрос {stepIndex + 1} из {TOTAL_STEPS}
+              </span>
+              <span className="font-medium text-primary">{progressPercent}%</span>
+            </div>
+            <Progress value={progressPercent} className="h-2" />
+            <CardTitle className="mt-4 text-lg font-bold text-foreground">
+              Персонализация AI-ассистента
             </CardTitle>
-            <CardDescription className="mt-2 text-muted-foreground">
-              Ответь на несколько коротких вопросов (1–2 минуты). Это поможет AI объяснять темы
-              понятнее, с подходящими примерами, метафорами и уровнем сложности. Опрос можно
-              пропустить, но тогда ответы ассистента будут менее персонализированными.
+            <CardDescription className="mt-1 text-muted-foreground">
+              Ответь на несколько коротких вопросов — так AI будет объяснять понятнее.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-2">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-              {/* Блок 1 */}
-              <section className="space-y-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">
-                  Блок 1. Уровень и база знаний
-                </h3>
-                <div className="space-y-2">
-                  <Label>1. Как ты оцениваешь свой текущий уровень обучения в целом?</Label>
+          <CardContent className="pt-4">
+            {step && (
+              <div className="space-y-4">
+                <Label className="text-base font-medium text-foreground">{step.label}</Label>
+                {step.type === "radio" && (
                   <RadioGroup
-                    value={prefs.level ?? ""}
-                    onValueChange={(v) => setPrefs((p) => ({ ...p, level: v as QuestionnairePreferences["level"] }))}
+                    value={(currentValue as string) ?? ""}
+                    onValueChange={(v) =>
+                      setPrefs((p) => ({ ...p, [step.key]: v as QuestionnairePreferences[typeof step.key] }))
+                    }
                     className="grid gap-2"
                   >
-                    {[
-                      { value: "beginner", label: "🟢 Новичок — объяснять с самых основ" },
-                      { value: "intermediate", label: "🟡 Средний — знаю базу, но путаюсь в сложных темах" },
-                      { value: "advanced", label: "🔴 Продвинутый — хочу глубокие и быстрые объяснения" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
+                    {step.options.map((o) => (
+                      <label
+                        key={o.value}
+                        className="flex cursor-pointer items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2.5 transition-colors hover:bg-secondary/50"
+                      >
                         <RadioGroupItem value={o.value} />
                         <span className="text-sm">{o.label}</span>
                       </label>
                     ))}
                   </RadioGroup>
-                </div>
-                <div className="space-y-2">
-                  <Label>2. Когда ты изучаешь новую тему, что обычно происходит?</Label>
-                  <RadioGroup
-                    value={prefs.understanding ?? ""}
-                    onValueChange={(v) => setPrefs((p) => ({ ...p, understanding: v as QuestionnairePreferences["understanding"] }))}
-                    className="grid gap-2"
-                  >
-                    {[
-                      { value: "need_basics", label: "Я ничего не понимаю без простого объяснения" },
-                      { value: "step_by_step", label: "Понимаю, если объясняют пошагово" },
-                      { value: "fast_but_deep", label: "Понимаю быстро, но хочу больше глубины" },
-                      { value: "details_and_logic", label: "Мне важны детали и логика, а не упрощение" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
-                        <RadioGroupItem value={o.value} />
-                        <span className="text-sm">{o.label}</span>
-                      </label>
-                    ))}
-                  </RadioGroup>
-                </div>
-              </section>
-
-              {/* Блок 2 */}
-              <section className="space-y-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">
-                  Блок 2. Стиль объяснений
-                </h3>
-                <div className="space-y-2">
-                  <Label>3. Как тебе проще всего понимать сложные темы?</Label>
-                  <RadioGroup
-                    value={prefs.explanation_style ?? ""}
-                    onValueChange={(v) => setPrefs((p) => ({ ...p, explanation_style: v as QuestionnairePreferences["explanation_style"] }))}
-                    className="grid gap-2"
-                  >
-                    {[
-                      { value: "simple", label: "Простыми словами, максимально понятно" },
-                      { value: "examples", label: "Через примеры из реальной жизни" },
-                      { value: "metaphors", label: "Через аналогии и метафоры" },
-                      { value: "logic", label: "Через логику и пошаговое объяснение" },
-                      { value: "structured", label: "Через схемы и структурированное объяснение" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
-                        <RadioGroupItem value={o.value} />
-                        <span className="text-sm">{o.label}</span>
-                      </label>
-                    ))}
-                  </RadioGroup>
-                </div>
-                <div className="space-y-2">
-                  <Label>4. Какой формат объяснений тебе ближе?</Label>
-                  <RadioGroup
-                    value={prefs.explanation_format ?? ""}
-                    onValueChange={(v) => setPrefs((p) => ({ ...p, explanation_format: v as QuestionnairePreferences["explanation_format"] }))}
-                    className="grid gap-2"
-                  >
-                    {[
-                      { value: "short", label: "Коротко и по делу" },
-                      { value: "medium", label: "Средне: кратко + примеры" },
-                      { value: "detailed", label: "Подробно и глубоко" },
-                      { value: "lecture", label: "Очень подробно, как на лекции" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
-                        <RadioGroupItem value={o.value} />
-                        <span className="text-sm">{o.label}</span>
-                      </label>
-                    ))}
-                  </RadioGroup>
-                </div>
-              </section>
-
-              {/* Блок 3 */}
-              <section className="space-y-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">
-                  Блок 3. Метафоры и ассоциации
-                </h3>
-                <div className="space-y-2">
-                  <Label>5. С какими примерами тебе легче всего понимать информацию? (можно несколько)</Label>
+                )}
+                {step.type === "checkbox" && (
                   <div className="grid gap-2">
-                    {[
-                      { value: "games" as const, label: "🎮 Игры" },
-                      { value: "tech" as const, label: "💻 Технологии и программирование" },
-                      { value: "school" as const, label: "📚 Учёба и школьные примеры" },
-                      { value: "real_life" as const, label: "🌍 Реальная жизнь и бытовые ситуации" },
-                      { value: "science" as const, label: "🧠 Научные и логические примеры" },
-                      { value: "career" as const, label: "💼 Карьера и работа" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
+                    {step.options.map((o) => (
+                      <label
+                        key={o.value}
+                        className="flex cursor-pointer items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2.5 transition-colors hover:bg-secondary/50"
+                      >
                         <Checkbox
-                          checked={(prefs.metaphor_examples ?? []).includes(o.value)}
+                          checked={
+                            Array.isArray(currentValue)
+                              ? (currentValue as string[]).includes(o.value)
+                              : false
+                          }
                           onCheckedChange={(checked) => {
                             setPrefs((p) => {
-                              const arr = p.metaphor_examples ?? [];
-                              const next = checked ? [...arr, o.value] : arr.filter((x) => x !== o.value);
-                              return { ...p, metaphor_examples: next };
+                              const arr = ((p[step.key] as string[]) ?? []).slice();
+                              if (checked) arr.push(o.value);
+                              else {
+                                const i = arr.indexOf(o.value);
+                                if (i !== -1) arr.splice(i, 1);
+                              }
+                              return { ...p, [step.key]: arr };
                             });
                           }}
                         />
                         <span className="text-sm">{o.label}</span>
                       </label>
                     ))}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>6. Нужны ли тебе метафоры при объяснении сложных тем?</Label>
-                  <RadioGroup
-                    value={prefs.metaphors_needed ?? ""}
-                    onValueChange={(v) => setPrefs((p) => ({ ...p, metaphors_needed: v as QuestionnairePreferences["metaphors_needed"] }))}
-                    className="grid gap-2"
-                  >
-                    {[
-                      { value: "yes", label: "Да, это сильно помогает понимать" },
-                      { value: "sometimes", label: "Иногда, если тема сложная" },
-                      { value: "no", label: "Нет, лучше прямое объяснение без метафор" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
-                        <RadioGroupItem value={o.value} />
-                        <span className="text-sm">{o.label}</span>
-                      </label>
-                    ))}
-                  </RadioGroup>
-                </div>
-              </section>
-
-              {/* Блок 4 */}
-              <section className="space-y-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">
-                  Блок 4. Темп и сложность
-                </h3>
-                <div className="space-y-2">
-                  <Label>7. Какой темп объяснения тебе комфортнее?</Label>
-                  <RadioGroup
-                    value={prefs.pace ?? ""}
-                    onValueChange={(v) => setPrefs((p) => ({ ...p, pace: v as QuestionnairePreferences["pace"] }))}
-                    className="grid gap-2"
-                  >
-                    {[
-                      { value: "slow", label: "Медленный, с пояснением каждого шага" },
-                      { value: "medium", label: "Средний, без лишней воды" },
-                      { value: "fast", label: "Быстрый и по существу" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
-                        <RadioGroupItem value={o.value} />
-                        <span className="text-sm">{o.label}</span>
-                      </label>
-                    ))}
-                  </RadioGroup>
-                </div>
-                <div className="space-y-2">
-                  <Label>8. Если тема очень сложная, как лучше объяснять?</Label>
-                  <RadioGroup
-                    value={prefs.complex_topic_style ?? ""}
-                    onValueChange={(v) => setPrefs((p) => ({ ...p, complex_topic_style: v as QuestionnairePreferences["complex_topic_style"] }))}
-                    className="grid gap-2"
-                  >
-                    {[
-                      { value: "simplify", label: "Максимально упростить" },
-                      { value: "steps", label: "Разбить на маленькие шаги" },
-                      { value: "simple_then_deep", label: "Сначала простая идея, потом углубление" },
-                      { value: "deep", label: "Сразу глубокое и точное объяснение" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
-                        <RadioGroupItem value={o.value} />
-                        <span className="text-sm">{o.label}</span>
-                      </label>
-                    ))}
-                  </RadioGroup>
-                </div>
-              </section>
-
-              {/* Блок 5 */}
-              <section className="space-y-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">
-                  Блок 5. Цель обучения
-                </h3>
-                <div className="space-y-2">
-                  <Label>9. Зачем ты используешь платформу? (можно несколько)</Label>
-                  <div className="grid gap-2">
-                    {[
-                      { value: "exams" as const, label: "Подготовка к экзаменам" },
-                      { value: "school" as const, label: "Учёба в школе/университете" },
-                      { value: "career" as const, label: "Освоение профессии / навыков" },
-                      { value: "self_learning" as const, label: "Саморазвитие" },
-                      { value: "quick_understanding" as const, label: "Быстрое понимание сложных тем" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
-                        <Checkbox
-                          checked={(prefs.goal ?? []).includes(o.value)}
-                          onCheckedChange={(checked) => {
-                            setPrefs((p) => {
-                              const arr = p.goal ?? [];
-                              const next = checked ? [...arr, o.value] : arr.filter((x) => x !== o.value);
-                              return { ...p, goal: next };
-                            });
-                          }}
+                    {step.key === "learning_areas" &&
+                      Array.isArray(currentValue) &&
+                      (currentValue as string[]).includes("other") && (
+                        <Input
+                          placeholder="Другое: укажите область"
+                          value={otherLearning}
+                          onChange={(e) => setOtherLearning(e.target.value)}
+                          className="mt-2 bg-secondary/30"
                         />
-                        <span className="text-sm">{o.label}</span>
-                      </label>
-                    ))}
+                      )}
                   </div>
-                </div>
-              </section>
-
-              {/* Блок 6 */}
-              <section className="space-y-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">
-                  Блок 6. Коммуникация и тон AI
-                </h3>
-                <div className="space-y-2">
-                  <Label>10. Какой стиль общения ассистента тебе комфортнее?</Label>
-                  <RadioGroup
-                    value={prefs.tone ?? ""}
-                    onValueChange={(v) => setPrefs((p) => ({ ...p, tone: v as QuestionnairePreferences["tone"] }))}
-                    className="grid gap-2"
-                  >
-                    {[
-                      { value: "friendly", label: "Дружелюбный и простой" },
-                      { value: "mentor", label: "Как наставник/преподаватель" },
-                      { value: "academic", label: "Строгий и академический" },
-                      { value: "informal", label: "Неформальный и лёгкий" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
-                        <RadioGroupItem value={o.value} />
-                        <span className="text-sm">{o.label}</span>
-                      </label>
-                    ))}
-                  </RadioGroup>
-                </div>
-                <div className="space-y-2">
-                  <Label>11. На каком языке тебе удобнее получать объяснения?</Label>
-                  <RadioGroup
-                    value={prefs.language ?? ""}
-                    onValueChange={(v) => setPrefs((p) => ({ ...p, language: v as QuestionnairePreferences["language"] }))}
-                    className="grid gap-2"
-                  >
-                    {[
-                      { value: "ru", label: "Русский" },
-                      { value: "en", label: "Английский" },
-                      { value: "mixed", label: "Смешанный (RU + EN)" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
-                        <RadioGroupItem value={o.value} />
-                        <span className="text-sm">{o.label}</span>
-                      </label>
-                    ))}
-                  </RadioGroup>
-                </div>
-              </section>
-
-              {/* Блок 7 */}
-              <section className="space-y-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">
-                  Блок 7. Персонализация под обучение
-                </h3>
-                <div className="space-y-2">
-                  <Label>12. В какой области ты чаще всего учишься? (можно несколько)</Label>
-                  <div className="grid gap-2">
-                    {[
-                      { value: "programming" as const, label: "Программирование" },
-                      { value: "math" as const, label: "Математика" },
-                      { value: "science" as const, label: "Наука" },
-                      { value: "school" as const, label: "Школьные предметы" },
-                      { value: "business" as const, label: "Бизнес / аналитика" },
-                      { value: "other" as const, label: "Другое" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
-                        <Checkbox
-                          checked={(prefs.learning_areas ?? []).includes(o.value)}
-                          onCheckedChange={(checked) => {
-                            setPrefs((p) => {
-                              const arr = p.learning_areas ?? [];
-                              const next = checked ? [...arr, o.value] : arr.filter((x) => x !== o.value);
-                              return { ...p, learning_areas: next };
-                            });
-                          }}
-                        />
-                        <span className="text-sm">{o.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                  {(prefs.learning_areas ?? []).includes("other") && (
-                    <Input
-                      placeholder="Другое: укажите область"
-                      value={otherLearning}
-                      onChange={(e) => setOtherLearning(e.target.value)}
-                      className="mt-2 bg-secondary/30"
-                    />
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label>13. Что тебя больше всего раздражает в объяснениях? (можно несколько)</Label>
-                  <div className="grid gap-2">
-                    {[
-                      { value: "too_complex" as const, label: "Слишком сложно и непонятно" },
-                      { value: "too_verbose" as const, label: "Слишком много воды" },
-                      { value: "too_short" as const, label: "Слишком кратко" },
-                      { value: "no_examples" as const, label: "Нет примеров" },
-                      { value: "too_academic" as const, label: "Слишком академично" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
-                        <Checkbox
-                          checked={(prefs.irritants ?? []).includes(o.value)}
-                          onCheckedChange={(checked) => {
-                            setPrefs((p) => {
-                              const arr = p.irritants ?? [];
-                              const next = checked ? [...arr, o.value] : arr.filter((x) => x !== o.value);
-                              return { ...p, irritants: next };
-                            });
-                          }}
-                        />
-                        <span className="text-sm">{o.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>14. Как ты хочешь, чтобы AI объяснял тебе сложные темы?</Label>
-                  <RadioGroup
-                    value={prefs.final_style ?? ""}
-                    onValueChange={(v) => setPrefs((p) => ({ ...p, final_style: v as QuestionnairePreferences["final_style"] }))}
-                    className="grid gap-2"
-                  >
-                    {[
-                      { value: "teacher_novice", label: "Как учителю новичку" },
-                      { value: "mentor_examples", label: "Как наставник с примерами из жизни" },
-                      { value: "metaphors", label: "Через метафоры и аналогии" },
-                      { value: "structured", label: "Логично и структурированно" },
-                      { value: "short_clear", label: "Кратко, но понятно" },
-                    ].map((o) => (
-                      <label key={o.value} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 cursor-pointer">
-                        <RadioGroupItem value={o.value} />
-                        <span className="text-sm">{o.label}</span>
-                      </label>
-                    ))}
-                  </RadioGroup>
-                </div>
-              </section>
-
-              <div className="flex flex-col gap-3 pt-4">
-                <Button type="submit" disabled={loading} className="w-full h-11 font-semibold">
-                  {loading ? "Сохранение…" : "Сохранить и перейти в платформу"}
-                </Button>
-                <button
-                  type="button"
-                  onClick={() => setOpenSkip(true)}
-                  className={cn(
-                    "text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
-                  )}
-                >
-                  Пропустить опрос
-                </button>
+                )}
               </div>
-            </form>
+            )}
+
+            <div className="mt-8 flex flex-col gap-3">
+              <div className="flex gap-2">
+                {stepIndex > 0 && (
+                  <Button type="button" variant="outline" onClick={goPrev} className="gap-2">
+                    <ArrowLeft className="h-4 w-4" />
+                    Назад
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  onClick={goNext}
+                  disabled={step?.type === "radio" ? !canNext : false}
+                  className="gap-2 flex-1"
+                >
+                  {isLastStep ? (
+                    loading ? "Сохранение…" : "Сохранить и перейти в платформу"
+                  ) : (
+                    <>
+                      Далее
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpenSkip(true)}
+                className={cn("text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground")}
+              >
+                Пропустить опрос
+              </button>
+            </div>
           </CardContent>
         </Card>
       </div>

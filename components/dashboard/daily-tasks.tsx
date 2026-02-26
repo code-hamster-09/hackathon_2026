@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import { dailyTasks } from "@/lib/mock-data"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { CheckCircle2, PlayCircle, FileText, HelpCircle, Sparkles } from "lucide-react"
-import { cn } from "@/lib/utils"
+import Link from "next/link";
+import { dailyTasks } from "@/lib/mock-data";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, PlayCircle, FileText, HelpCircle, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const typeIcons: Record<string, React.ElementType> = {
   quiz: HelpCircle,
   video: PlayCircle,
   reading: FileText,
   project: CheckCircle2,
-}
+};
 
 const priorityStyles: Record<string, string> = {
   high: "bg-destructive/10 text-destructive border-destructive/20",
   medium: "bg-warning/10 text-warning-foreground border-warning/20",
   low: "bg-secondary text-muted-foreground border-border",
-}
+};
 
 export function DailyTasks() {
   return (
@@ -32,10 +32,12 @@ export function DailyTasks() {
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {dailyTasks.map((task) => {
-          const Icon = typeIcons[task.type] || CheckCircle2
+          const Icon = typeIcons[task.type] || CheckCircle2;
+          const query = encodeURIComponent(`Help me with: ${task.title}`);
           return (
-            <div
+            <Link
               key={task.id}
+              href={`/assistant?q=${query}`}
               className="group flex items-center gap-3 rounded-xl border border-border/50 bg-secondary/30 p-3 transition-all hover:border-primary/20 hover:bg-secondary/60"
             >
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
@@ -45,18 +47,13 @@ export function DailyTasks() {
                 <p className="truncate text-sm font-medium text-foreground">{task.title}</p>
                 <p className="truncate text-xs text-muted-foreground">{task.course}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className={cn("text-xs", priorityStyles[task.priority])}>
-                  {task.dueTime}
-                </Badge>
-                <Button size="sm" variant="ghost" className="h-8 px-3 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
-                  Start
-                </Button>
-              </div>
-            </div>
-          )
+              <Badge variant="outline" className={cn("text-xs shrink-0", priorityStyles[task.priority])}>
+                {task.dueTime}
+              </Badge>
+            </Link>
+          );
         })}
       </CardContent>
     </Card>
-  )
+  );
 }

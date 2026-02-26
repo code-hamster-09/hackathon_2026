@@ -210,7 +210,5 @@ export const achievements = [
 ]
 
 export const chatMessages = [
-  { id: "1", role: "assistant" as const, content: "Hi Alex! I'm your AI learning assistant. I can help you with course materials, suggest study plans, and answer questions about your courses. What would you like help with today?" },
-  { id: "2", role: "user" as const, content: "I'm struggling with the neural networks chapter in my ML course. Can you explain backpropagation simply?" },
-  { id: "3", role: "assistant" as const, content: "Great question! Think of backpropagation like a feedback loop:\n\n1. **Forward Pass**: Your neural network makes a prediction\n2. **Calculate Error**: Compare the prediction to the actual answer\n3. **Backward Pass**: Go backwards through the network, figuring out how much each connection contributed to the error\n4. **Update Weights**: Adjust each connection to reduce the error\n\nIt's like a teacher grading a group project and telling each student exactly what they need to improve. The network keeps doing this until it gets better at making predictions.\n\nWould you like me to create a practice quiz on this topic?" },
+  { id: "1", role: "assistant" as const, content: "Hi! I'm your AI learning assistant. I can help you with course materials, suggest study plans, and answer questions about your courses. What would you like help with today?" },
 ]

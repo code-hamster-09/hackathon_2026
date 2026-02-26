@@ -46,7 +46,7 @@ export default function LessonPage({ params }: { params: Params }) {
 
   if (!course || !lesson) {
     return (
-      <div className="flex flex-col">
+      <div className="flex min-h-0 flex-1 flex-col overflow-auto">
         <TopNavbar title="Lesson Not Found" />
         <div className="flex flex-col items-center justify-center py-32">
           <p className="text-lg font-semibold text-foreground">Lesson not found</p>
@@ -128,7 +128,7 @@ export default function LessonPage({ params }: { params: Params }) {
   const currentAnswerId = currentQuestion ? answers[currentQuestion.id] : undefined
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-h-0 flex-1 flex-col overflow-auto">
       <TopNavbar title={course.title} />
       <div className="flex flex-col gap-6 p-6">
         <div className="flex items-center justify-between gap-2">

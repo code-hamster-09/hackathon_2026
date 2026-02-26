@@ -86,7 +86,7 @@ export default function SignUpPage() {
                 <Input
                   id="firstName"
                   name="firstName"
-                  placeholder="Alex"
+                  placeholder="Имя"
                   className="h-11 bg-secondary/50"
                 />
               </div>
@@ -95,7 +95,7 @@ export default function SignUpPage() {
                 <Input
                   id="lastName"
                   name="lastName"
-                  placeholder="Chen"
+                  placeholder="Фамилия"
                   className="h-11 bg-secondary/50"
                 />
               </div>
