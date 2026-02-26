@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { GraduationCap } from "lucide-react"
+import { GraduationCap, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,6 +14,7 @@ export default function SignInPage() {
   const router = useRouter()
   const [login, { isLoading, error }] = useLoginMutation()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -58,9 +59,9 @@ export default function SignInPage() {
             <span className="text-xl font-bold text-foreground">EduFlow</span>
           </Link>
           <div>
-            <CardTitle className="text-2xl font-bold text-foreground">Welcome back</CardTitle>
+            <CardTitle className="text-2xl font-bold text-foreground">С возвращением</CardTitle>
             <CardDescription className="mt-1 text-muted-foreground">
-              Sign in to continue your learning journey
+              Войдите, чтобы продолжить ваше обучение
             </CardDescription>
           </div>
         </CardHeader>
@@ -72,7 +73,7 @@ export default function SignInPage() {
               </p>
             )}
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email" className="text-foreground">Email</Label>
+              <Label htmlFor="email" className="text-foreground">Email адрес</Label>
               <Input
                 id="email"
                 name="email"
@@ -83,28 +84,41 @@ export default function SignInPage() {
             </div>
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-foreground">Password</Label>
+                <Label htmlFor="password" className="text-foreground">Пароль</Label>
                 <Link href="#" className="text-xs font-medium text-primary hover:underline">
-                  Forgot password?
+                  Забыли пароль?
                 </Link>
               </div>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                className="h-11 bg-secondary/50"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Введите ваш пароль"
+                  className="h-11 pr-10 bg-secondary/50"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-11 w-10 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowPassword((v) => !v)}
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
             <Button type="submit" disabled={isLoading} className="mt-2 h-11 font-semibold shadow-lg shadow-primary/25">
-              {isLoading ? "Вход…" : "Sign in"}
+              {isLoading ? "Вход…" : "Войти"}
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            {"Don't have an account? "}
+            {"Нет аккаунта? "}
             <Link href="/auth/signup" className="font-medium text-primary hover:underline">
-              Sign up
+              Зарегистрироваться
             </Link>
           </p>
         </CardContent>
