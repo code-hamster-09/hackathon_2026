@@ -25,28 +25,28 @@ import { TrendingUp, BookOpen, Clock, Target } from "lucide-react"
 
 const statCards = [
   {
-    label: "Courses Completed",
+    label: "Курсов выполнено",
     value: "8",
     change: "+2 this month",
     icon: BookOpen,
     color: "bg-primary/10 text-primary",
   },
   {
-    label: "Total Study Hours",
+    label: "Общее время обучения",
     value: "156h",
     change: "+18h this week",
     icon: Clock,
     color: "bg-accent/10 text-accent",
   },
   {
-    label: "Avg. Score",
+    label: "Средний балл",
     value: "88%",
     change: "+3% improvement",
     icon: Target,
     color: "bg-chart-3/10 text-chart-3",
   },
   {
-    label: "Completion Rate",
+    label: "Скорость выполнения",
     value: "92%",
     change: "Top 5% of learners",
     icon: TrendingUp,

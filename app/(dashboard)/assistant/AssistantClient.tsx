@@ -349,7 +349,7 @@ export default function AssistantClient() {
           className="absolute inset-0 overflow-y-auto overflow-x-hidden p-4 pb-4 sm:p-6 sm:pb-4"
           style={{ paddingBottom: "max(1rem, 10rem)" }}
         >
-          <div className="mx-auto w-full max-w-3xl space-y-6">
+          <div className="mx-auto w-full space-y-6">
             {messages.map((message: any, idx: number) => {
               const isLast = idx === messages.length - 1;
               const content = String(message.content ?? "");
@@ -404,8 +404,8 @@ export default function AssistantClient() {
         </div>
 
         {/* Нижняя панель: всегда внизу экрана, не скроллится */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-border/60 bg-background/95 p-4 pt-2 backdrop-blur sm:p-6">
-          <div className="mx-auto max-w-3xl">
+        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-border/60 bg-background/95 p-4 backdrop-blur sm:p-6">
+          <div className="mx-auto">
             <form onSubmit={handleSubmit} className="flex gap-3">
               <div className="relative flex flex-1 items-center rounded-2xl border border-input bg-card/80 shadow-sm pl-2">
                 {/* <Sparkles className="pointer-events-none ml-3 h-4 w-4 shrink-0 text-primary/60 mr-2" /> */}

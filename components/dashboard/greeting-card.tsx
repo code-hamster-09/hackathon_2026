@@ -12,10 +12,10 @@ export function GreetingCard() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-xl font-bold sm:text-2xl lg:text-3xl">
-            Welcome back, {firstNameDisplay}
+          С возвращением, {firstNameDisplay}
           </h2>
           <p className="mt-1 text-primary-foreground/80">
-            {"You're"} on a {currentUser.streak}-day streak. Keep going!
+          Вы уже {currentUser.streak}-дней подряд. Продолжайте в том же духе!
           </p>
         </div>
         <div className="flex flex-wrap gap-4 sm:gap-6">

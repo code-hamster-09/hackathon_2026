@@ -18,12 +18,12 @@ import { useProfile } from "@/lib/profile-context";
 import { currentUser } from "@/lib/mock-data";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/courses", label: "Courses", icon: BookOpen },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/gamification", label: "Achievements", icon: Trophy },
-  { href: "/assistant", label: "AI Assistant", icon: MessageSquare },
-  { href: "/profile", label: "Profile", icon: User },
+  { href: "/dashboard", label: "Дашборд", icon: LayoutDashboard },
+  { href: "/courses", label: "Курсы", icon: BookOpen },
+  { href: "/analytics", label: "Аналитика", icon: BarChart3 },
+  { href: "/gamification", label: "Достижения", icon: Trophy },
+  { href: "/assistant", label: "ИИ Помощник", icon: MessageSquare },
+  { href: "/profile", label: "Профиль", icon: User },
 ];
 
 export function AppSidebar() {

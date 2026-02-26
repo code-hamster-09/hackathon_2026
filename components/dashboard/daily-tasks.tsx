@@ -26,9 +26,9 @@ export function DailyTasks() {
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
           <Sparkles className="h-4 w-4 text-primary" />
-          AI-Recommended Tasks
+          Рекомендованные задания
         </CardTitle>
-        <Badge variant="secondary" className="text-xs font-medium">Today</Badge>
+        <Badge variant="secondary" className="text-xs font-medium">Сегодня</Badge>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {dailyTasks.map((task) => {

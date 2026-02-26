@@ -3,10 +3,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { BookOpen, BarChart3, MessageSquare, Trophy } from "lucide-react"
 
 const actions = [
-  { href: "/courses", label: "Browse Courses", icon: BookOpen, color: "bg-primary/10 text-primary" },
-  { href: "/analytics", label: "View Analytics", icon: BarChart3, color: "bg-accent/10 text-accent" },
-  { href: "/assistant", label: "Ask AI", icon: MessageSquare, color: "bg-chart-3/10 text-chart-3" },
-  { href: "/gamification", label: "Achievements", icon: Trophy, color: "bg-warning/10 text-warning-foreground" },
+  { href: "/courses", label: "Просмотреть курсы", icon: BookOpen, color: "bg-primary/10 text-primary" },
+  { href: "/analytics", label: "Просмотр аналитики", icon: BarChart3, color: "bg-accent/10 text-accent" },
+  { href: "/assistant", label: "Спросить ИИ", icon: MessageSquare, color: "bg-chart-3/10 text-chart-3" },
+  { href: "/gamification", label: "Достижения", icon: Trophy, color: "bg-warning/10 text-warning-foreground" },
 ]
 
 export function QuickActions() {

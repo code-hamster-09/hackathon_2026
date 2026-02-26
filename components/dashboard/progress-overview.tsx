@@ -11,9 +11,9 @@ export function ProgressOverview() {
   return (
     <Card className="border-border/50">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-base font-semibold text-foreground">Course Progress</CardTitle>
+        <CardTitle className="text-base font-semibold text-foreground">Прогресс курсов</CardTitle>
         <Link href="/courses" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-          View all <ArrowRight className="h-3 w-3" />
+          Посмотреть все <ArrowRight className="h-3 w-3" />
         </Link>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
