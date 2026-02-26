@@ -181,9 +181,9 @@ function saveHistory(messages: ChatMessage[]) {
 }
 
 const suggestions = [
-  { icon: BookOpen, label: "Suggest a study plan for this week" },
-  { icon: Brain, label: "Explain neural networks simply" },
-  { icon: HelpCircle, label: "Help me prepare for my quiz" },
+  { icon: BookOpen, label: "Предложить учебный план на эту неделю" },
+  { icon: Brain, label: "Объяснить нейронные сети просто" },
+  { icon: HelpCircle, label: "Помоги мне подготовиться к тесту" },
 ];
 
 type Route = "/courses" | "/analytics" | "/dashboard";
@@ -341,7 +341,7 @@ export default function AssistantClient() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <TopNavbar title="AI Assistant" />
+      <TopNavbar title="ИИ Помощник" />
       <div className="relative flex min-h-0 flex-1 flex-col">
         {/* Скролл только здесь; снизу отступ под панель */}
         <div

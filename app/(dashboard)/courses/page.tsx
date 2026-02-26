@@ -32,7 +32,7 @@ export default function CoursesPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-auto">
-      <TopNavbar title="Courses" />
+      <TopNavbar title="Курсы" />
       <div className="flex flex-col gap-6 p-6">
         {/* Search and filters bar */}
         <div className="flex flex-col gap-4">
@@ -40,7 +40,7 @@ export default function CoursesPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search courses..."
+                placeholder="Поиск курсов..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="h-11 bg-card pl-10"
@@ -52,14 +52,14 @@ export default function CoursesPage() {
               onClick={() => setShowFilters(!showFilters)}
             >
               <SlidersHorizontal className="h-4 w-4" />
-              Filters
+              Фильтры
             </Button>
           </div>
 
           {showFilters && (
             <div className="flex flex-col gap-3 rounded-xl border border-border/50 bg-card p-4">
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Категория</p>
                 <div className="flex flex-wrap gap-2">
                   {categories.map((cat) => (
                     <Badge
@@ -79,7 +79,7 @@ export default function CoursesPage() {
                 </div>
               </div>
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Difficulty</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Сложность</p>
                 <div className="flex flex-wrap gap-2">
                   {difficulties.map((diff) => (
                     <Badge
@@ -105,7 +105,7 @@ export default function CoursesPage() {
         {/* Results */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing <span className="font-medium text-foreground">{filtered.length}</span> courses
+            Показано <span className="font-medium text-foreground">{filtered.length}</span> курсов
           </p>
         </div>
 
@@ -117,8 +117,8 @@ export default function CoursesPage() {
 
         {filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-lg font-semibold text-foreground">No courses found</p>
-            <p className="mt-1 text-sm text-muted-foreground">Try adjusting your search or filters</p>
+            <p className="text-lg font-semibold text-foreground">Курсы не найдены</p>
+            <p className="mt-1 text-sm text-muted-foreground">Попробуйте изменить поиск или фильтры</p>
           </div>
         )}
       </div>

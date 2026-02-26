@@ -14,7 +14,7 @@ export function ActivityTimeline() {
   return (
     <Card className="border-border/50">
       <CardHeader className="pb-4">
-        <CardTitle className="text-base font-semibold text-foreground">Recent Activity</CardTitle>
+        <CardTitle className="text-base font-semibold text-foreground">Недавняя активность</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4">

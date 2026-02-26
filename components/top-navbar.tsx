@@ -17,7 +17,7 @@ export function TopNavbar({ title }: { title: string }) {
       <div className="flex items-center gap-2 sm:gap-3">
         <div className="hidden items-center gap-2 sm:flex">
           <Input
-            placeholder="Search courses, lessons..."
+            placeholder="Поиск курсов, уроков..."
             className="h-9 w-40 bg-secondary sm:w-64"
           />
         </div>

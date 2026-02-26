@@ -21,11 +21,11 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
   if (!course) {
     return (
       <div className="flex min-h-0 flex-1 flex-col overflow-auto">
-        <TopNavbar title="Course Not Found" />
+        <TopNavbar title="Курс не найден" />
         <div className="flex flex-col items-center justify-center py-32">
-          <p className="text-lg font-semibold text-foreground">Course not found</p>
+          <p className="text-lg font-semibold text-foreground">Курс не найден</p>
           <Button asChild variant="outline" className="mt-4">
-            <Link href="/courses">Back to courses</Link>
+            <Link href="/courses">Вернуться к курсам</Link>
           </Button>
         </div>
       </div>
@@ -42,7 +42,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
           className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to courses
+          Вернуться к курсам
         </Link>
 
         {/* Course header */}
@@ -95,13 +95,13 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
             <Card className="border-border/50">
               <CardHeader>
                 <CardTitle className="text-base font-semibold text-foreground">
-                  Lessons
+                  Уроки
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 {lessons.length === 0 && (
                   <p className="text-xs text-muted-foreground">
-                    Lessons for this course will appear here soon.
+                    Уроки для этого курса появятся здесь в ближайшее время.
                   </p>
                 )}
                 {lessons.map((lesson, index) => (
@@ -130,7 +130,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                       {lesson.completed && (
                         <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-400">
                           <CheckCircle2 className="h-3 w-3" />
-                          Completed
+                          Выполнено
                         </div>
                       )}
                     </div>
@@ -144,27 +144,27 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
           <div className="flex flex-col gap-4">
             <Card className="border-border/50">
               <CardHeader>
-                <CardTitle className="text-base font-semibold text-foreground">Course Info</CardTitle>
+                <CardTitle className="text-base font-semibold text-foreground">Информация о курсе</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Difficulty</span>
+                  <span className="text-muted-foreground">Сложность</span>
                   <Badge variant="outline">{course.difficulty}</Badge>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Lessons</span>
+                  <span className="text-muted-foreground">Уроки</span>
                   <span className="font-medium text-foreground">{course.totalLessons}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Completed</span>
+                  <span className="text-muted-foreground">Выполнено</span>
                   <span className="font-medium text-foreground">{course.completedLessons}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Duration</span>
+                  <span className="text-muted-foreground">Продолжительность</span>
                   <span className="font-medium text-foreground">{course.duration}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Deadline</span>
+                  <span className="text-muted-foreground">Срок выполнения</span>
                   <span className="font-medium text-foreground">{course.deadline}</span>
                 </div>
               </CardContent>
@@ -172,7 +172,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
 
             <Card className="border-border/50">
               <CardHeader>
-                <CardTitle className="text-base font-semibold text-foreground">Tags</CardTitle>
+                <CardTitle className="text-base font-semibold text-foreground">Теги</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
@@ -189,8 +189,8 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
               <Card className="border-accent/30 bg-accent/5">
                 <CardContent className="flex flex-col items-center gap-2 p-6 text-center">
                   <CheckCircle2 className="h-8 w-8 text-accent" />
-                  <p className="font-semibold text-foreground">Course Completed!</p>
-                  <p className="text-sm text-muted-foreground">Great job finishing this course.</p>
+                  <p className="font-semibold text-foreground">Курс выполнен!</p>
+                  <p className="text-sm text-muted-foreground">Отличная работа по выполнению этого курса.</p>
                 </CardContent>
               </Card>
             )}

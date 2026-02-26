@@ -25,7 +25,7 @@ export function GreetingCard() {
             </div>
             <div>
               <p className="text-2xl font-bold">{currentUser.streak}</p>
-              <p className="text-xs text-primary-foreground/70">Day streak</p>
+              <p className="text-xs text-primary-foreground/70">Дней подряд</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -34,7 +34,7 @@ export function GreetingCard() {
             </div>
             <div>
               <p className="text-2xl font-bold">{currentUser.coursesInProgress}</p>
-              <p className="text-xs text-primary-foreground/70">In progress</p>
+              <p className="text-xs text-primary-foreground/70">В процессе</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -42,8 +42,8 @@ export function GreetingCard() {
               <Clock className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{currentUser.totalHours}h</p>
-              <p className="text-xs text-primary-foreground/70">Total hours</p>
+              <p className="text-2xl font-bold">{currentUser.totalHours}ч</p>
+              <p className="text-xs text-primary-foreground/70">Общее время</p>
             </div>
           </div>
         </div>

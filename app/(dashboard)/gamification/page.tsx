@@ -36,7 +36,7 @@ export default function GamificationPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-auto">
-      <TopNavbar title="Achievements" />
+      <TopNavbar title="Достижения" />
       <div className="flex flex-col gap-6 p-6">
         {/* Level card */}
         <Card className="overflow-hidden border-border/50">
@@ -47,8 +47,8 @@ export default function GamificationPage() {
                   {currentUser.level}
                 </div>
                 <div>
-                  <p className="text-sm text-primary-foreground/70">Current Level</p>
-                  <p className="text-2xl font-bold">Knowledge Seeker</p>
+                  <p className="text-sm text-primary-foreground/70">Текущий уровень</p>
+                  <p className="text-2xl font-bold">Знаток</p>
                   <p className="mt-0.5 text-sm text-primary-foreground/70">
                     {currentUser.xp} / {currentUser.xpToNext} XP to Level {currentUser.level + 1}
                   </p>
@@ -57,15 +57,15 @@ export default function GamificationPage() {
               <div className="flex gap-6">
                 <div className="text-center">
                   <p className="text-3xl font-bold">{currentUser.points.toLocaleString()}</p>
-                  <p className="text-sm text-primary-foreground/70">Total Points</p>
+                  <p className="text-sm text-primary-foreground/70">Общее количество очков</p>
                 </div>
                 <div className="text-center">
                   <p className="text-3xl font-bold">{currentUser.streak}</p>
-                  <p className="text-sm text-primary-foreground/70">Day Streak</p>
+                  <p className="text-sm text-primary-foreground/70">Дней подряд</p>
                 </div>
                 <div className="text-center">
                   <p className="text-3xl font-bold">{unlockedCount}/{achievements.length}</p>
-                  <p className="text-sm text-primary-foreground/70">Achievements</p>
+                  <p className="text-sm text-primary-foreground/70">Достижения</p>
                 </div>
               </div>
             </div>
@@ -77,7 +77,7 @@ export default function GamificationPage() {
 
         {/* Achievements grid */}
         <div>
-          <h2 className="mb-4 text-lg font-semibold text-foreground">All Achievements</h2>
+          <h2 className="mb-4 text-lg font-semibold text-foreground">Все достижения</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {achievements.map((achievement) => {
               const Icon = iconMap[achievement.icon] || Star
@@ -114,11 +114,11 @@ export default function GamificationPage() {
                     </p>
                     {achievement.unlocked ? (
                       <Badge className="mt-3 bg-accent/10 text-accent border-accent/20" variant="outline">
-                        Unlocked {achievement.date}
+                        Разблокировано {achievement.date}
                       </Badge>
                     ) : (
                       <Badge variant="secondary" className="mt-3 text-xs">
-                        Locked
+                        Заблокировано
                       </Badge>
                     )}
                   </CardContent>

@@ -47,11 +47,11 @@ export default function LessonPage({ params }: { params: Params }) {
   if (!course || !lesson) {
     return (
       <div className="flex min-h-0 flex-1 flex-col overflow-auto">
-        <TopNavbar title="Lesson Not Found" />
+        <TopNavbar title="Урок не найден" />
         <div className="flex flex-col items-center justify-center py-32">
-          <p className="text-lg font-semibold text-foreground">Lesson not found</p>
+          <p className="text-lg font-semibold text-foreground">Урок не найден</p>
           <Button asChild variant="outline" className="mt-4">
-            <Link href="/courses">Back to courses</Link>
+            <Link href="/courses">Вернуться к курсам</Link>
           </Button>
         </div>
       </div>
@@ -137,10 +137,10 @@ export default function LessonPage({ params }: { params: Params }) {
             className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to course
+            Вернуться к курсу
           </Link>
           <Badge variant="outline" className="text-[11px]">
-            Lesson: {lesson.title}
+            Урок: {lesson.title}
           </Badge>
         </div>
 
@@ -182,10 +182,10 @@ export default function LessonPage({ params }: { params: Params }) {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="text-xl font-semibold text-foreground">
-                Lesson quiz
+                Тест по уроку
               </CardTitle>
               <span className="text-sm text-muted-foreground">
-                {answeredCount}/{quiz.length} answered
+                {answeredCount}/{quiz.length} отвечено
               </span>
             </div>
             <div className="mt-2">
@@ -195,7 +195,7 @@ export default function LessonPage({ params }: { params: Params }) {
           <CardContent className="flex flex-col gap-4">
             {!quiz.length && (
               <p className="text-xs text-muted-foreground">
-                Quiz for this lesson will appear here soon.
+                Тест для этого урока появится здесь в ближайшее время.
               </p>
             )}
 
@@ -203,7 +203,7 @@ export default function LessonPage({ params }: { params: Params }) {
               <>
                 <div>
                   <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Question {currentIndex + 1} of {quiz.length}
+                    Вопрос {currentIndex + 1} из {quiz.length}
                   </p>
                   <p className="text-xl font-medium text-foreground">
                     {currentQuestion.question}
@@ -234,7 +234,7 @@ export default function LessonPage({ params }: { params: Params }) {
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-3">
                   <p className="text-sm text-muted-foreground">
-                    Выбери ответ и нажми «Next», чтобы перейти к следующему вопросу.
+                    Выбери ответ и нажми «Следующий», чтобы перейти к следующему вопросу.
                   </p>
                   <Button
                     size="default"
@@ -242,7 +242,7 @@ export default function LessonPage({ params }: { params: Params }) {
                     disabled={!currentAnswerId}
                     onClick={handleNext}
                   >
-                    Next
+                    Следующий
                   </Button>
                 </div>
               </>
@@ -276,7 +276,7 @@ export default function LessonPage({ params }: { params: Params }) {
                     onClick={handleExplainWithAI}
                   >
                     <Sparkles className="h-3.5 w-3.5" />
-                    Объяснит ИИ
+                    Объяснить ИИ
                   </Button>
                   <Button
                     size="sm"
@@ -284,12 +284,12 @@ export default function LessonPage({ params }: { params: Params }) {
                     className="text-xs"
                     onClick={handleRestart}
                   >
-                    Пройти тест заново
+                    Пройти тест снова
                   </Button>
                 </div>
 
                 <p className="text-[11px] text-muted-foreground">
-                  Нажми «Объяснит ИИ», чтобы перейти в диалог, где ассистент разберёт твои
+                  Нажми «Объяснить ИИ», чтобы перейти в диалог, где ассистент разберёт твои
                   ошибки простым языком, по одной, с понятными примерами. После разбора можно
                   вернуться и пройти тест ещё раз.
                 </p>

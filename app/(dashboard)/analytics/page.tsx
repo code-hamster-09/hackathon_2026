@@ -27,28 +27,28 @@ const statCards = [
   {
     label: "Курсов выполнено",
     value: "8",
-    change: "+2 this month",
+    change: "+2 в этом месяце",
     icon: BookOpen,
     color: "bg-primary/10 text-primary",
   },
   {
     label: "Общее время обучения",
     value: "156h",
-    change: "+18h this week",
+    change: "+18 часов в этой неделе",
     icon: Clock,
     color: "bg-accent/10 text-accent",
   },
   {
     label: "Средний балл",
     value: "88%",
-    change: "+3% improvement",
+    change: "+3% улучшение",
     icon: Target,
     color: "bg-chart-3/10 text-chart-3",
   },
   {
     label: "Скорость выполнения",
     value: "92%",
-    change: "Top 5% of learners",
+    change: "Топ 5% обучающихся",
     icon: TrendingUp,
     color: "bg-warning/10 text-warning-foreground",
   },
@@ -57,7 +57,7 @@ const statCards = [
 export default function AnalyticsPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-auto">
-      <TopNavbar title="Analytics" />
+      <TopNavbar title="Аналитика" />
       <div className="flex flex-col gap-6 p-6">
         {/* Stat cards */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -81,7 +81,7 @@ export default function AnalyticsPage() {
           {/* Weekly Activity */}
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-base font-semibold text-foreground">Weekly Activity</CardTitle>
+              <CardTitle className="text-base font-semibold text-foreground">Еженедельная активность</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-64">
@@ -108,7 +108,7 @@ export default function AnalyticsPage() {
           {/* Monthly Progress */}
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-base font-semibold text-foreground">Monthly Progress</CardTitle>
+              <CardTitle className="text-base font-semibold text-foreground">Месячный прогресс</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-64">
@@ -151,7 +151,7 @@ export default function AnalyticsPage() {
         {/* Performance Radar */}
         <Card className="border-border/50">
           <CardHeader>
-            <CardTitle className="text-base font-semibold text-foreground">Performance Breakdown</CardTitle>
+            <CardTitle className="text-base font-semibold text-foreground">Разложение производительности</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="mx-auto h-80 max-w-lg">

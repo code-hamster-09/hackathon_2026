@@ -226,17 +226,17 @@ export default function ProfilePage() {
       .toUpperCase() || currentUser.initials;
 
   const stats = [
-    { icon: BookOpen, label: "Courses Completed", value: String(completedCourses) },
-    { icon: Clock, label: "Study Hours", value: `${currentUser.totalHours}h` },
-    { icon: Trophy, label: "Total Points", value: currentUser.points.toLocaleString() },
-    { icon: Flame, label: "Day Streak", value: String(currentUser.streak) },
-    { icon: Star, label: "Level", value: String(currentUser.level) },
-    { icon: Calendar, label: "Member Since", value: "Sep 2025" },
+    { icon: BookOpen, label: "Выполненные курсы", value: String(completedCourses) },
+    { icon: Clock, label: "Общее время обучения", value: `${currentUser.totalHours}h` },
+    { icon: Trophy, label: "Общие очки", value: currentUser.points.toLocaleString() },
+    { icon: Flame, label: "Дней подряд", value: String(currentUser.streak) },
+    { icon: Star, label: "Уровень", value: String(currentUser.level) },
+    { icon: Calendar, label: "Участник с", value: new Date(currentUser.joinedDate).toLocaleDateString("ru-RU", { month: "short", year: "numeric" }) },
   ];
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-auto">
-      <TopNavbar title="Profile" />
+      <TopNavbar title="Профиль" />
       <div className="flex flex-col gap-6 p-6">
         {!questionnaireCompleted && (
           <Card className="border-primary/30 bg-primary/5">
@@ -270,13 +270,13 @@ export default function ProfilePage() {
                 <div className="flex flex-col items-center gap-2 lg:flex-row">
                   <h2 className="text-2xl font-bold text-foreground">{firstNameDisplay}</h2>
                   <Badge className="bg-primary/10 text-primary border-primary/20" variant="outline">
-                    Level {currentUser.level}
+                    Уровень {currentUser.level}
                   </Badge>
                 </div>
                 <p className="mt-1 text-muted-foreground">{email}</p>
                 <div className="mt-4 max-w-sm">
                   <div className="mb-1 flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">XP to Level {currentUser.level + 1}</span>
+                    <span className="text-muted-foreground">XP до уровня {currentUser.level + 1}</span>
                     <span className="font-medium text-primary">
                       {currentUser.xp}/{currentUser.xpToNext}
                     </span>
@@ -332,7 +332,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label className="text-foreground">Email</Label>
+                  <Label className="text-foreground">Email адрес</Label>
                   <Input value={email} readOnly className="bg-muted/50" />
                 </div>
                 <div className="flex flex-col gap-2">
