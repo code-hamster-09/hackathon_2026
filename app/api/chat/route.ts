@@ -1,10 +1,14 @@
 import { OpenAIStream, StreamingTextResponse } from "ai";
+import { buildPersonaPrompt } from "@/lib/build-persona-prompt";
+import type { QuestionnairePreferences } from "@/lib/questionnaire-types";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
+const BASE_SYSTEM =
+  "Ты — дружелюбный AI-наставник Fluo в платформе EduFlow. Всегда отвечай на русском и форматируй ответы для чата: заголовки ##, списки -, жирный **текст**, код в `backticks`.\n\n";
+
 export async function POST(req: Request) {
-  // поддерживаем оба варианта имени переменной, чтобы не ловить 500 из‑за конфигурации
   const apiKey = process.env.GROQCLOUD_API_KEY || process.env.GROQ_API_KEY;
   if (!apiKey) {
     return new Response(JSON.stringify({ error: "GROQCLOUD_API_KEY не установлен" }), {
@@ -13,10 +17,13 @@ export async function POST(req: Request) {
     });
   }
 
-  const { messages } = await req.json();
-  const limitedMessages = Array.isArray(messages)
-    ? messages.slice(-8)
-    : [];
+  const payload = await req.json();
+  const messages = payload.messages ?? [];
+  const preferences = (payload.preferences ?? null) as QuestionnairePreferences | null;
+  const limitedMessages = Array.isArray(messages) ? messages.slice(-8) : [];
+
+  const persona = buildPersonaPrompt(preferences);
+  const systemContent = BASE_SYSTEM + (persona ? persona + "\n" : "");
 
   const body = {
     model: "llama-3.3-70b-versatile",
@@ -25,8 +32,7 @@ export async function POST(req: Request) {
     messages: [
       {
         role: "system",
-        content:
-          "Ты — дружелюбный AI-наставник Fluo в платформе EduFlow. Всегда отвечай НА РУССКОМ и форматируй ответы в Markdown, чтобы они красиво отображались в чате.\n\nПравила оформления:\n- Начинай ответ с короткого заголовка второго уровня `##` с подходящим эмодзи (например, \"## 🚀 План подготовки к экзамену\").\n- Структурируй текст в виде блоков: списки, подпункты, подзаголовки `###`.\n- Используй маркеры `-` и нумерованные списки `1.` там, где это логично.\n- Важные термины и шаги выделяй **жирным**.\n- Короткие фразы, команды и код оборачивай в `inline code`.\n- Избегай слишком длинных простынь текста — разбивай на абзацы.\n\nНе используй HTML, только чистый Markdown.",
+        content: systemContent,
       },
       ...limitedMessages,
     ],

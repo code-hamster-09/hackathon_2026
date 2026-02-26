@@ -37,7 +37,7 @@ export default function SignUpPage() {
       // If email confirmation is required, Supabase won't return a session
       const { data } = await supabaseBrowser.auth.getSession()
       if (data.session) {
-        router.push("/dashboard")
+        router.push("/onboarding")
       } else {
         router.push("/auth/signin")
       }

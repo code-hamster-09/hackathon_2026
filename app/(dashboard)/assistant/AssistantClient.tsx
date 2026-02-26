@@ -2,7 +2,7 @@
 
 import { useChat } from "ai/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 
 import avaFluo from "@/assets/images/avaFluo.png";
 import { TopNavbar } from "@/components/top-navbar";
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { currentUser, chatMessages as initialMessages } from "@/lib/mock-data";
+import { getSupabaseBrowser } from "@/lib/supabase-client";
+import type { QuestionnairePreferences } from "@/lib/questionnaire-types";
 import { cn } from "@/lib/utils";
 import { BookOpen, Brain, HelpCircle, Send, Sparkles } from "lucide-react";
 import Image from "next/image";
@@ -20,6 +22,144 @@ type ChatMessage = {
   role: "user" | "assistant";
   content: string;
 };
+
+function renderInline(line: string): ReactElement[] {
+  // Поддержка **жирного** и `инлайн-кода` в одной строке
+  const parts = line.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return parts.map((part, index) => {
+    if (!part) return <span key={index} />;
+
+    if (part.startsWith("**") && part.endsWith("**")) {
+      const text = part.slice(2, -2);
+      return (
+        <strong key={index} className="font-semibold">
+          {text}
+        </strong>
+      );
+    }
+
+    if (part.startsWith("`") && part.endsWith("`")) {
+      const text = part.slice(1, -1);
+      return (
+        <code
+          key={index}
+          className="rounded bg-muted px-1 py-0.5 text-[0.8em] font-mono"
+        >
+          {text}
+        </code>
+      );
+    }
+
+    return <span key={index}>{part}</span>;
+  });
+}
+
+function renderRichContent(content: string): ReactElement[] {
+  const lines = content.split("\n");
+  const elements: ReactElement[] = [];
+  let buffer: string[] = [];
+  let listBuffer: string[] = [];
+  let ordered = false;
+  let key = 0;
+
+  const flushParagraph = () => {
+    if (!buffer.length) return;
+    const text = buffer.join(" ");
+    buffer = [];
+    elements.push(
+      <p key={`p-${key++}`} className="mb-1.5 last:mb-0">
+        {renderInline(text)}
+      </p>
+    );
+  };
+
+  const flushList = () => {
+    if (!listBuffer.length) return;
+    const items = [...listBuffer];
+    listBuffer = [];
+    const ListTag = ordered ? "ol" : "ul";
+    elements.push(
+      <ListTag
+        key={`list-${key++}`}
+        className="mb-1.5 ml-4 list-disc space-y-1 last:mb-0 marker:text-xs"
+      >
+        {items.map((item, idx) => (
+          <li key={idx} className="leading-snug">
+            {renderInline(item)}
+          </li>
+        ))}
+      </ListTag> as any
+    );
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trimEnd();
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    // Заголовки ## и ###
+    if (/^#{1,3}\s+/.test(trimmed)) {
+      flushParagraph();
+      flushList();
+      const level = trimmed.startsWith("###") ? 3 : trimmed.startsWith("##") ? 2 : 1;
+      const text = trimmed.replace(/^#{1,3}\s+/, "");
+      const HeadingTag = level === 3 ? "h3" : level === 2 ? "h2" : "h1";
+      elements.push(
+        <HeadingTag
+          key={`h-${key++}`}
+          className={cn(
+            "font-semibold leading-tight",
+            level === 1 && "mb-2 text-base",
+            level === 2 && "mb-2 text-sm",
+            level === 3 && "mb-1 text-xs"
+          )}
+        >
+          {renderInline(text)}
+        </HeadingTag> as any
+      );
+      continue;
+    }
+
+    // Нумерованные списки: 1. ...
+    if (/^\d+\.\s+/.test(trimmed)) {
+      flushParagraph();
+      if (!listBuffer.length) ordered = true;
+      const text = trimmed.replace(/^\d+\.\s+/, "");
+      listBuffer.push(text);
+      continue;
+    }
+
+    // Маркированные списки: - ... или * ...
+    if (/^[-*]\s+/.test(trimmed)) {
+      flushParagraph();
+      if (!listBuffer.length) ordered = false;
+      const text = trimmed.replace(/^[-*]\s+/, "");
+      listBuffer.push(text);
+      continue;
+    }
+
+    // Обычный текст — буфер в параграф
+    buffer.push(trimmed);
+  }
+
+  flushParagraph();
+  flushList();
+
+  if (!elements.length && content) {
+    elements.push(
+      <p key={`p-last`} className="mb-1.5 last:mb-0">
+        {renderInline(content)}
+      </p>
+    );
+  }
+
+  return elements;
+}
 
 function loadHistory(): ChatMessage[] {
   if (typeof window === "undefined") return [];
@@ -32,7 +172,7 @@ function loadHistory(): ChatMessage[] {
 
 function saveHistory(messages: ChatMessage[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem("assistant-history", JSON.stringify(messages.slice(-100)));
+  localStorage.setItem("assistant-history", JSON.stringify(messages.slice(-30)));
 }
 
 const suggestions = [
@@ -62,6 +202,23 @@ export default function AssistantClient() {
     }));
   }, []);
 
+  const [preferences, setPreferences] = useState<QuestionnairePreferences | null>(null);
+  useEffect(() => {
+    const supabase = getSupabaseBrowser();
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase
+        .from("profiles")
+        .select("preferences")
+        .eq("id", user.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.preferences) setPreferences(data.preferences as QuestionnairePreferences);
+        });
+    });
+  }, []);
+
   const {
     messages,
     input,
@@ -75,6 +232,7 @@ export default function AssistantClient() {
   } = useChat({
     api: "/api/chat",
     initialMessages: seedMessages,
+    body: { preferences: preferences ?? undefined },
     fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
       const finalInit: RequestInit = {
         ...init,
@@ -227,11 +385,7 @@ export default function AssistantClient() {
                         ...
                       </span>
                     ) : (
-                      content.split("\n").map((line: string, i: number) => (
-                        <p key={i} className={i > 0 ? "mt-1.5" : ""}>
-                          {line}
-                        </p>
-                      ))
+                      renderRichContent(content)
                     )}
                   </div>
                 </div>
