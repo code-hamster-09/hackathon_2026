@@ -14,28 +14,28 @@ export function Hero() {
       <div className="relative mx-auto max-w-5xl text-center">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
           <Sparkles className="h-4 w-4" />
-          <span>AI-powered personalized learning</span>
+          <span>Персонализированное обучение на основе искусственного интеллекта</span>
         </div>
 
         <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-7xl">
-          Learn smarter, not harder
+          Учитесь умнее, а не сложнее
         </h1>
 
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:mt-6 sm:text-lg lg:text-xl">
-          EduFlow uses artificial intelligence to personalize your learning journey. Track progress, get smart recommendations, and achieve your goals faster.
+          EduFlow использует искусственный интеллект для персонализации вашего пути обучения. Отслеживайте прогресс, получайте умные рекомендации и достигайте своих целей быстрее.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:mt-10 sm:gap-4">
           <Button asChild size="lg" className="h-12 px-8 text-base font-semibold shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30">
             <Link href="/auth/signup">
-              Get started free
+              Начать бесплатно
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="h-12 px-8 text-base font-semibold">
             <Link href="#features">
               <Play className="mr-2 h-4 w-4" />
-              Watch demo
+              Посмотреть демо
             </Link>
           </Button>
         </div>
@@ -43,9 +43,9 @@ export function Hero() {
         {/* Stats */}
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8 sm:text-left">
           {[
-            { value: "50K+", label: "Active learners" },
-            { value: "200+", label: "Expert courses" },
-            { value: "95%", label: "Completion rate" },
+            { value: "50K+", label: "Активные студенты" },
+            { value: "200+", label: "Экспертные курсы" },
+            { value: "95%", label: "Процент завершения" },
           ].map((stat) => (
             <div key={stat.label}>
               <p className="text-3xl font-bold text-foreground lg:text-4xl">{stat.value}</p>

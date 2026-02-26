@@ -14,22 +14,22 @@ export function Footer() {
           </div>
           <nav className="flex flex-wrap justify-center gap-4 text-center md:justify-end md:gap-8">
             <Link href="#features" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Features
+              Возможности
             </Link>
             <Link href="#" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Pricing
+              Цены
             </Link>
             <Link href="#" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              About
+              О нас
             </Link>
             <Link href="#" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Contact
+              Контакты
             </Link>
           </nav>
         </div>
         <div className="mt-8 border-t border-border pt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            2026 EduFlow. All rights reserved.
+            2026 EduFlow. Все права защищены.
           </p>
         </div>
       </div>

@@ -2,21 +2,21 @@ export function HowItWorks() {
   const steps = [
     {
       step: "01",
-      title: "Create your profile",
+      title: "Создайте свой профиль",
       description:
-        "Sign up and tell us about your learning goals, interests, and preferred pace. Our AI builds a personalized roadmap.",
+        "Зарегистрируйтесь и расскажите нам о ваших целях обучения, интересах и предпочитаемом темпе. Наш ИИ создаёт персонализированный учебный план.",
     },
     {
       step: "02",
-      title: "Follow AI-guided paths",
+      title: "Следуйте путям, направленным ИИ",
       description:
-        "Get smart recommendations for courses, lessons, and practice exercises that match your skill level and goals.",
+        "Получайте умные рекомендации для курсов, уроков и практических упражнений, которые соответствуют вашему уровню и целям.",
     },
     {
       step: "03",
-      title: "Track and achieve",
+      title: "Отслеживайте и достигайте",
       description:
-        "Monitor your progress with detailed analytics, earn achievements, and watch your skills grow over time.",
+        "Отслеживайте свой прогресс с детальными аналитическими данными, получайте достижения и наблюдайте за ростом ваших навыков с течением времени.",
     },
   ]
 
@@ -24,9 +24,9 @@ export function HowItWorks() {
     <section className="bg-secondary/50 px-6 py-24 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-wider text-primary">How it works</p>
+          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Как это работает</p>
           <h2 className="mt-2 text-balance text-3xl font-bold tracking-tight text-foreground lg:text-4xl">
-            Start learning in 3 simple steps
+            Начать обучение за 3 простых шага
           </h2>
         </div>
 

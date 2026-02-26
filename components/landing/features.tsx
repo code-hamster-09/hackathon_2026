@@ -4,23 +4,23 @@ import { Card, CardContent } from "@/components/ui/card"
 const features = [
   {
     icon: Brain,
-    title: "AI Recommendations",
-    description: "Get personalized course suggestions and study plans powered by machine learning that adapts to your learning style.",
+    title: "Рекомендации ИИ",
+    description: "Получайте персонализированные предложения курсов и учебных планов, работающих на основе машинного обучения, которые адаптируются к вашему стилю обучения.",
   },
   {
     icon: Target,
-    title: "Progress Tracking",
-    description: "Visual dashboards and milestone tracking to keep you motivated and on track toward your learning goals.",
+    title: "Отслеживание прогресса",
+    description: "Визуальные дашборды и отслеживание достижений, чтобы поддерживать вас мотивированным и на пути к вашим целям обучения.",
   },
   {
     icon: BarChart3,
-    title: "Smart Analytics",
-    description: "Deep insights into your performance, study patterns, and areas for improvement with actionable data.",
+    title: "Умные аналитики",
+    description: "Глубокие аналитические данные о вашей производительности, паттернах обучения и областях для улучшения с действенными данными.",
   },
   {
     icon: MessageSquare,
-    title: "AI Assistant",
-    description: "Ask questions, get explanations, and receive guidance from an intelligent assistant that understands your courses.",
+    title: "ИИ Помощник",
+    description: "Задавайте вопросы, получайте объяснения и получайте помощь от интеллектуального помощника, который понимает ваши курсы.",
   },
 ]
 
@@ -29,12 +29,12 @@ export function Features() {
     <section id="features" className="px-6 py-24 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Features</p>
+          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Возможности</p>
           <h2 className="mt-2 text-balance text-3xl font-bold tracking-tight text-foreground lg:text-4xl">
-            Everything you need to accelerate learning
+            Все, что вам нужно для ускорения обучения
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Powerful tools designed to make education more effective, engaging, and personalized for every learner.
+            Мощные инструменты, разработанные для более эффективного, увлекательного и персонализированного обучения для каждого студента.
           </p>
         </div>
 

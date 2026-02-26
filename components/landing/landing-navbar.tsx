@@ -17,22 +17,22 @@ export function LandingNavbar() {
 
         <nav className="hidden items-center gap-8 md:flex">
           <Link href="#features" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-            Features
+            Возможности
           </Link>
           <Link href="#" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-            Pricing
+            Цены
           </Link>
           <Link href="#" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-            About
+            О нас
           </Link>
         </nav>
 
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
-            <Link href="/auth/signin">Log in</Link>
+            <Link href="/auth/signin">Войти</Link>
           </Button>
           <Button asChild size="sm">
-            <Link href="/auth/signup">Get started</Link>
+            <Link href="/auth/signup">Начать</Link>
           </Button>
         </div>
       </div>

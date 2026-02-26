@@ -5,26 +5,26 @@ import { Star } from "lucide-react"
 const testimonials = [
   {
     name: "Jordan Lee",
-    role: "Software Engineer",
+    role: "Инженер-программист",
     initials: "JL",
     quote:
-      "EduFlow's AI recommendations helped me transition from frontend to full-stack in just 3 months. The personalized learning paths are incredible.",
+      "Рекомендации ИИ EduFlow помогли мне перейти от фронтенд-разработки к полноstack-разработке за 3 месяца. Персонализированные учебные пути впечатляют.",
     rating: 5,
   },
   {
     name: "Maria Santos",
-    role: "Data Analyst",
+    role: "Аналитик данных",
     initials: "MS",
     quote:
-      "The analytics dashboard gives me clear insights into where I'm excelling and where I need to improve. It's like having a personal tutor.",
+      "Дашборд аналитики даёт мне чёткие представления о том, где я преуспеваю и где мне нужно улучшиться. Это как иметь персонального репетитора.",
     rating: 5,
   },
   {
     name: "David Kim",
-    role: "Product Designer",
+    role: "Дизайнер продукта",
     initials: "DK",
     quote:
-      "The gamification system keeps me motivated. I've maintained a 30-day learning streak thanks to the daily challenges and achievement system.",
+      "Система геймификации поддерживает меня в мотивации. Я поддерживаю 30-дневную учебную серию благодаря ежедневным вызовам и системе достижений.",
     rating: 5,
   },
 ]
@@ -34,9 +34,9 @@ export function Testimonials() {
     <section className="px-6 py-24 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Testimonials</p>
+          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Отзывы</p>
           <h2 className="mt-2 text-balance text-3xl font-bold tracking-tight text-foreground lg:text-4xl">
-            Loved by learners worldwide
+            Любимые студентами со всего мира
           </h2>
         </div>
 
